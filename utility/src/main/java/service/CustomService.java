@@ -2,7 +2,6 @@ package main.java.service;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.security.PrivateKey;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -13,9 +12,8 @@ public abstract class CustomService extends Thread {
 	protected CustomLogger logger;
 	protected boolean run;
 	protected final int KILL_TIME_IN_SECONDS;
-	protected PrivateKey key;
 
-	public CustomService(int port, PrivateKey key, String absolutePathToLogFile) throws IOException {
+	public CustomService(int port, String absolutePathToLogFile) throws IOException {
 		KILL_TIME_IN_SECONDS = 10;
 
 		if (port != -1) {
@@ -26,7 +24,6 @@ public abstract class CustomService extends Thread {
 		}
 
 		logger = new CustomLogger(absolutePathToLogFile);
-		this.key = key;
 
 		controlLock = new ReentrantLock();
 		run = true;

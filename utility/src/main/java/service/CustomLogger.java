@@ -9,30 +9,35 @@ import java.util.Date;
 
 public class CustomLogger {
 
-	private File logFile;
-	private PrintWriter writer;
+    private File logFile;
+    private PrintWriter writer;
 
-	public CustomLogger(String absolutePathToLogFile) throws IOException {
-		logFile = new File(absolutePathToLogFile);
-		if (!logFile.exists()) {
-			logFile.createNewFile();
-		}
+    public CustomLogger(String absolutePathToLogFile) throws IOException {
+        logFile = new File(absolutePathToLogFile);
 
-		writer = new PrintWriter(new FileOutputStream(logFile, true));
-	}
+        if (!logFile.getParentFile().exists()) {
+            logFile.getParentFile().mkdir();
+        }
 
-	public void close() throws IOException {
-		writer.close();
-	}
+        if (!logFile.exists()) {
+            logFile.createNewFile();
+        }
 
-	public synchronized void writeLog(String logMessage, Exception e) {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+        writer = new PrintWriter(new FileOutputStream(logFile, true));
+    }
 
-		writer.write("[" + dateFormat.format(new Date()) + "] " + logMessage + System.lineSeparator());
-		if (e != null) {
-			e.printStackTrace(writer);
-		}
-		writer.flush();
-	}
+    public void close() throws IOException {
+        writer.close();
+    }
+
+    public synchronized void writeLog(String logMessage, Exception e) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+
+        writer.write("[" + dateFormat.format(new Date()) + "] " + logMessage + System.lineSeparator());
+        if (e != null) {
+            e.printStackTrace(writer);
+        }
+        writer.flush();
+    }
 
 }

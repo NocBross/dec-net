@@ -20,7 +20,8 @@
 	<Text Text="Registrierung" id="login_register"
 		GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-	<Label Text="Mail" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+	<Label Text="Benutzername" GridPane.columnIndex="0"
+		GridPane.rowIndex="2" />
 
 	<TextField fx:id="nicknameField" GridPane.columnIndex="1"
 		GridPane.rowIndex="2" />
