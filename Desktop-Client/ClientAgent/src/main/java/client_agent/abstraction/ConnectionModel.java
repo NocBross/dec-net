@@ -16,7 +16,6 @@ public class ConnectionModel {
     private InetAddress serverAddress;
     private Lock serverConnectionLock;
     private Map<String, Integer> portMap;
-    private Map<String, String> userMap;
     private TCPConnection serverConnection;
     // end of attributes
 
@@ -29,7 +28,6 @@ public class ConnectionModel {
         portMap.put(EndPoint.LOGIN_END_POINT, Port.LOGIN_SERVICE);
         portMap.put(EndPoint.REGISTER_END_POINT, Port.REGISTER_SERVICE);
 
-        userMap = new HashMap<String, String>();
         serverConnection = null;
     }
     // end of constructor
@@ -60,18 +58,6 @@ public class ConnectionModel {
     }
 
     /**
-     * Adds a new hash-mail-pair to the user map.
-     * 
-     * @param mail
-     *            - mail address of the user
-     * @param hashedMail
-     *            - hashed mail address of the user
-     */
-    public void addUserHash(String mail, String hashedMail) {
-        userMap.put(hashedMail, mail);
-    }
-
-    /**
      * Deletes a specific server connection.
      * 
      * @param key
@@ -92,17 +78,6 @@ public class ConnectionModel {
 
         unlockServerConnection();
         return result;
-    }
-
-    /**
-     * Returns the plain text of the given hashed mail address.
-     * 
-     * @param hashedMail
-     *            - hashed mail address of the user
-     * @return mail address of the user
-     */
-    public String getUserMail(String hashedMail) {
-        return userMap.get(hashedMail);
     }
 
     /**
