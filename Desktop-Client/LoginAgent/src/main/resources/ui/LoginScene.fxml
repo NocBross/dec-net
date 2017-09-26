@@ -28,22 +28,19 @@
 
 	<PasswordField fx:id="passwordField" text=""
 		GridPane.columnIndex="1" GridPane.rowIndex="2" onKeyReleased="#submitKeyEvent" />
-	<Text fx:id="resetText" text="Passwort vergessen?"
-		GridPane.columnIndex="1" GridPane.rowIndex="3" onMouseEntered="#hover"
-		onMouseExited="#noHover" onMouseReleased="#clickedReset" />
 
 	<HBox spacing="10" alignment="bottom_right" GridPane.columnIndex="1"
-		GridPane.rowIndex="5">
+		GridPane.rowIndex="4">
 
 		<Button fx:id="loginButton" text="Anmelden" onAction="#submitButtonAction"
 			onKeyReleased="#submitKeyEvent" />
 	</HBox>
 
 	<Button fx:id="registerButton" id="login_register" text="Registrieren"
-		GridPane.columnIndex="0" GridPane.rowIndex="7" onMouseEntered="#hover"
+		GridPane.columnIndex="0" GridPane.rowIndex="6" onMouseEntered="#hover"
 		onMouseExited="#noHover" onAction="#registerButtonAction" />
 
 	<Text fx:id="resultText" id="error" GridPane.columnIndex="0"
-		GridPane.rowIndex="9" GridPane.columnSpan="2" />
+		GridPane.rowIndex="8" GridPane.columnSpan="2" />
 
 </GridPane>

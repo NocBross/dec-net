@@ -62,18 +62,6 @@ public class LoginSceneController extends LoginSceneComponents implements RootCo
     }
 
     /**
-     * Opens the register scene when the register text is clicked.
-     * 
-     * @param event
-     *            - mouse released event
-     */
-    @FXML
-    protected void clickedReset(MouseEvent event) {
-        resetText.setCursor(Cursor.DEFAULT);
-        agent.switchAgent(LTAgentID.RESET_AGENT);
-    }
-
-    /**
      * Sets the courser to a hand when the mouse is over the register text.
      * 
      * @param event
@@ -172,7 +160,6 @@ public class LoginSceneController extends LoginSceneComponents implements RootCo
     private void handleReportMessage(String message) {
         switch (requestController.receiveResult(message)) {
             case 0:
-                agent.switchAgent(LTAgentID.SOC_NET_AGENT);
                 nicknameField.setText("");
                 passwordField.setText("");
                 resultText.setText("Login erfolgreich!");

@@ -71,7 +71,7 @@ public class ClientAgent extends LTAgent {
     }
 
     public void close() {
-
+        System.exit(0);
     }
 
     @Override
