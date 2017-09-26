@@ -21,9 +21,4 @@ public class LogFiles {
      * Name of the log file for the RegisterService.
      */
     public static final String REGISTER_LOG = LOG_PREFIX + "register" + LOG_POSTFIX;
-
-    /**
-     * Name of the log file for the ShippginService.
-     */
-    public static final String SHIPPING_LOG = LOG_PREFIX + "shipping" + LOG_POSTFIX;
 }

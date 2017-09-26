@@ -24,7 +24,7 @@
 	</properties>
 	<packaging>pom</packaging>
 	<modules>
-		<module>RessourceHub</module>
+		<module>ResourceHub</module>
 		<module>Desktop-Client</module>
 		<module>utility</module>
 	</modules>
