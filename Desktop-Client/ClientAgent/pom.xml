@@ -44,5 +44,10 @@
 			<artifactId>AuthenticationAgent</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>de</groupId>
+			<artifactId>SocNetAgent</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>

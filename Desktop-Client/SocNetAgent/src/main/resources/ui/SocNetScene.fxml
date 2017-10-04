@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane>
+	<center>
+		<SplitPane id="horizontalSplitPane" dividerPositions="0.25"
+			orientation="HORIZONTAL">
+			<items>
+				<AnchorPane style="-fx-background-color: #6AED5E;" />
+				<SplitPane id="verticalSplitPane" dividerPositions="0.67"
+					orientation="VERTICAL">
+					<items>
+						<AnchorPane style="-fx-background-color: #1650AD;" />
+						<AnchorPane style="-fx-background-color: #E81212;" />
+					</items>
+				</SplitPane>
+			</items>
+		</SplitPane>
+	</center>
+</BorderPane>

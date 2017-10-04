@@ -1,20 +1,22 @@
 package main.java.agent;
 
 import javafx.application.Platform;
-import javafx.scene.Scene;
+import javafx.scene.Parent;
 import javafx.stage.Stage;
-import main.java.constants.LTAgentID;
+import main.java.constants.AgentID;
 
-public class CustomMiddleAgent extends LTAgent {
+public class CustomMiddleAgent extends CustomAgent {
 
-	protected LTAgent activeAgent;
+	protected CustomAgent activeAgent;
+	protected Stage primaryStage;
 
-	public CustomMiddleAgent(LTAgent parent, LTAgentID ID) {
+	public CustomMiddleAgent(CustomAgent parent, AgentID ID, Stage primaryStage) {
 		super(parent, ID);
+		this.primaryStage = primaryStage;
 	}
 
 	@Override
-	public Scene getScene() {
+	public Parent getScene() {
 		try {
 			return activeAgent.getScene();
 		} catch (NullPointerException npe) {
@@ -40,7 +42,7 @@ public class CustomMiddleAgent extends LTAgent {
 	}
 
 	@Override
-	public void switchAgent(LTAgentID destinationAgent) {
+	public void switchAgent(AgentID destinationAgent) {
 		Platform.runLater(new Runnable() {
 
 			@Override
@@ -49,8 +51,7 @@ public class CustomMiddleAgent extends LTAgent {
 
 				for (index = 0; index < children.size(); index++) {
 					if (children.get(index).getID() == destinationAgent) {
-						Stage stage = (Stage) activeAgent.getScene().getWindow();
-						stage.setScene(children.get(index).getScene());
+						primaryStage.getScene().setRoot(children.get(index).getScene());
 						activeAgent = children.get(index);
 						break;
 					}

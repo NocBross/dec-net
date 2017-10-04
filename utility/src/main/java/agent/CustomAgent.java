@@ -3,8 +3,8 @@ package main.java.agent;
 import java.util.LinkedList;
 import java.util.List;
 
-import javafx.scene.Scene;
-import main.java.constants.LTAgentID;
+import javafx.scene.Parent;
+import main.java.constants.AgentID;
 
 /**
  * The agent super class defines the structure of each agent of the PAC pattern.
@@ -13,16 +13,16 @@ import main.java.constants.LTAgentID;
  *
  */
 
-public abstract class LTAgent {
+public abstract class CustomAgent {
 
-	protected LTAgent parent;
-	protected List<LTAgent> children;
-	protected LTAgentID ID;
+	protected CustomAgent parent;
+	protected List<CustomAgent> children;
+	protected AgentID ID;
 
-	public LTAgent(LTAgent parent, LTAgentID ID) {
+	public CustomAgent(CustomAgent parent, AgentID ID) {
 		this.parent = parent;
 		this.ID = ID;
-		children = new LinkedList<LTAgent>();
+		children = new LinkedList<CustomAgent>();
 	}
 
 	/**
@@ -32,7 +32,7 @@ public abstract class LTAgent {
 	 *            - new agent which has to be add
 	 * @return true in case of success; false otherwise
 	 */
-	public boolean addChild(LTAgent newChild) {
+	public boolean addChild(CustomAgent newChild) {
 		boolean existing = false;
 
 		for (int i = 0; i < children.size(); i++) {
@@ -72,7 +72,7 @@ public abstract class LTAgent {
 	 *            - ID of the agent which has to delete
 	 * @return true in case of success; false otherwise
 	 */
-	public boolean deleteChild(LTAgentID agentToDelete) {
+	public boolean deleteChild(AgentID agentToDelete) {
 		int index = -1;
 
 		for (int i = 0; i < children.size(); i++) {
@@ -95,16 +95,16 @@ public abstract class LTAgent {
 	 * 
 	 * @return agent ID
 	 */
-	public LTAgentID getID() {
+	public AgentID getID() {
 		return ID;
 	}
 
 	/**
 	 * Returns the scene of the agent module.
 	 * 
-	 * @return scene of the module
+	 * @return root node of scene of the module
 	 */
-	public abstract Scene getScene();
+	public abstract Parent getScene();
 
 	/**
 	 * Receives data from the server or other clients.
@@ -152,6 +152,6 @@ public abstract class LTAgent {
 	 * @param destinationAgent
 	 *            - new agent which has to show
 	 */
-	public abstract void switchAgent(LTAgentID destinationAgent);
+	public abstract void switchAgent(AgentID destinationAgent);
 
 }

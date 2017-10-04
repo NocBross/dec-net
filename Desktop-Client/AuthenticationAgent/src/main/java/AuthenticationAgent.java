@@ -1,8 +1,9 @@
 package main.java;
 
+import javafx.stage.Stage;
 import main.java.agent.CustomMiddleAgent;
-import main.java.agent.LTAgent;
-import main.java.constants.LTAgentID;
+import main.java.agent.CustomAgent;
+import main.java.constants.AgentID;
 
 /**
  * The AthenticationAgent knows all agents which are used for the login and
@@ -14,8 +15,8 @@ import main.java.constants.LTAgentID;
 
 public class AuthenticationAgent extends CustomMiddleAgent {
 
-	public AuthenticationAgent(LTAgent parent) {
-		super(parent, LTAgentID.AUTHENTICATION_AGENT);
+	public AuthenticationAgent(CustomAgent parent, Stage primaryStage) {
+		super(parent, AgentID.AUTHENTICATION_AGENT, primaryStage);
 
 		addChild(new LoginAgent(this));
 		addChild(new RegisterAgent(this));

@@ -1,22 +1,20 @@
 package main.java.agent;
 
 import javafx.scene.Parent;
-import javafx.scene.Scene;
-import main.java.constants.LTAgentID;
+import main.java.constants.AgentID;
 
-public class CustomBottomAgent extends LTAgent {
+public class CustomBottomAgent extends CustomAgent {
 
-	protected Parent rootAgent;
-	protected Scene agentScene;
+	protected Parent rootSceneNode;
 	protected RootController agentSceneController;
 
-	public CustomBottomAgent(LTAgent parent, LTAgentID ID) {
+	public CustomBottomAgent(CustomAgent parent, AgentID ID) {
 		super(parent, ID);
 	}
 
 	@Override
-	public Scene getScene() {
-		return agentScene;
+	public Parent getScene() {
+		return rootSceneNode;
 	}
 
 	@Override
@@ -35,7 +33,7 @@ public class CustomBottomAgent extends LTAgent {
 	}
 
 	@Override
-	public void switchAgent(LTAgentID destinationAgent) {
+	public void switchAgent(AgentID destinationAgent) {
 		parent.switchAgent(destinationAgent);
 	}
 

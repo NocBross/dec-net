@@ -25,5 +25,5 @@ public interface RequestController {
 	 * @param newAgent
 	 *            - new agent of the controller
 	 */
-	public void setAgent(LTAgent newAgent);
+	public void setAgent(CustomAgent newAgent);
 }

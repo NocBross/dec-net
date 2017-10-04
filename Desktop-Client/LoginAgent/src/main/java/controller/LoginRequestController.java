@@ -1,7 +1,7 @@
 package main.java.controller;
 
 import main.java.abstraction.LoginData;
-import main.java.agent.LTAgent;
+import main.java.agent.CustomAgent;
 import main.java.agent.RequestController;
 import main.java.constants.EndPoint;
 import main.java.message.LoginMessage;
@@ -17,7 +17,7 @@ import main.java.message.ReportMessage;
 
 public class LoginRequestController implements RequestController {
 
-	private LTAgent agent;
+	private CustomAgent agent;
 	private LoginData data;
 	private LoginValidationController validationController;
 
@@ -80,7 +80,7 @@ public class LoginRequestController implements RequestController {
 	 *            - new agent of the controller
 	 */
 	@Override
-	public void setAgent(LTAgent newAgent) {
+	public void setAgent(CustomAgent newAgent) {
 		this.agent = newAgent;
 	}
 }

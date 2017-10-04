@@ -1,7 +1,7 @@
 package main.java.controller;
 
 import main.java.abstraction.RegisterData;
-import main.java.agent.LTAgent;
+import main.java.agent.CustomAgent;
 import main.java.agent.RequestController;
 import main.java.constants.EndPoint;
 import main.java.message.RegisterMessage;
@@ -9,7 +9,7 @@ import main.java.message.ReportMessage;
 
 public class RegisterRequestController implements RequestController {
 
-	private LTAgent agent;
+	private CustomAgent agent;
 	private RegisterData data;
 	private RegisterValidationController validationController;
 
@@ -57,7 +57,7 @@ public class RegisterRequestController implements RequestController {
 	}
 
 	@Override
-	public void setAgent(LTAgent newAgent) {
+	public void setAgent(CustomAgent newAgent) {
 		agent = newAgent;
 	}
 }

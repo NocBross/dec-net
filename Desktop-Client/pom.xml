@@ -13,5 +13,6 @@
 		<module>AuthenticationAgent</module>
 		<module>LoginAgent</module>
 		<module>RegisterAgent</module>
+		<module>SocNetAgent</module>
 	</modules>
 </project>

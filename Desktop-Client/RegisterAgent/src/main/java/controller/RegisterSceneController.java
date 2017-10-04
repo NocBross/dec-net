@@ -5,9 +5,9 @@ import javafx.fxml.FXML;
 import javafx.scene.input.KeyEvent;
 import main.java.abstraction.RegisterData;
 import main.java.abstraction.RegisterSceneComponents;
-import main.java.agent.LTAgent;
+import main.java.agent.CustomAgent;
 import main.java.agent.RootController;
-import main.java.constants.LTAgentID;
+import main.java.constants.AgentID;
 
 /**
  * The RegisterSceneController defines the behavior of the register scene.
@@ -18,7 +18,7 @@ import main.java.constants.LTAgentID;
 
 public class RegisterSceneController extends RegisterSceneComponents implements RootController {
 
-	private LTAgent agent;
+	private CustomAgent agent;
 	private RegisterData data;
 	private RegisterValidationController validationController;
 	private RegisterRequestController requestController;
@@ -42,7 +42,7 @@ public class RegisterSceneController extends RegisterSceneComponents implements 
 		case 0:
 			registerButton.setDisable(false);
 			cancelButton.setDisable(false);
-			changeToAgent(LTAgentID.LOGIN_AGENT);
+			changeToAgent(AgentID.LOGIN_AGENT);
 			break;
 		case 1:
 			break;
@@ -55,7 +55,7 @@ public class RegisterSceneController extends RegisterSceneComponents implements 
 	}
 
 	@Override
-	public void setAgent(LTAgent newAgent) {
+	public void setAgent(CustomAgent newAgent) {
 		agent = newAgent;
 		requestController.setAgent(newAgent);
 	}
@@ -68,7 +68,7 @@ public class RegisterSceneController extends RegisterSceneComponents implements 
 	 */
 	@FXML
 	protected void cancelButtonAction(ActionEvent event) {
-		changeToAgent(LTAgentID.LOGIN_AGENT);
+		changeToAgent(AgentID.LOGIN_AGENT);
 	}
 
 	/**
@@ -119,7 +119,7 @@ public class RegisterSceneController extends RegisterSceneComponents implements 
 	 * Deletes the text in the different text fields and changes to the login
 	 * service.
 	 */
-	private void changeToAgent(LTAgentID destination) {
+	private void changeToAgent(AgentID destination) {
 		nicknameField.setText("");
 		passwordField.setText("");
 		passwordRepeatField.setText("");
