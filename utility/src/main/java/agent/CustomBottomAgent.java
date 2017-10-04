@@ -10,6 +10,9 @@ public class CustomBottomAgent extends CustomAgent {
 
 	public CustomBottomAgent(CustomAgent parent, AgentID ID) {
 		super(parent, ID);
+
+		rootSceneNode = null;
+		agentSceneController = null;
 	}
 
 	@Override
