@@ -18,6 +18,9 @@ public class SocNetAgent extends CustomMiddleAgent {
 	public SocNetAgent(CustomAgent parent, Stage primaryStage) {
 		super(parent, AgentID.SOCNET_AGENT, primaryStage);
 
+		children.add(new FriendshipAgent(this));
+		activeAgent = null;
+
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/SocNetScene.fxml"));
 			rootSceneNode = loader.load();
@@ -31,30 +34,6 @@ public class SocNetAgent extends CustomMiddleAgent {
 	@Override
 	public Parent getScene() {
 		return rootSceneNode;
-	}
-
-	@Override
-	public void receiveMessage(String message) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void sendMessage(String destination, String message) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void scatterMessage(String message) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void switchAgent(AgentID destinationAgent) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

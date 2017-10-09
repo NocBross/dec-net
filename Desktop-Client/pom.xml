@@ -14,5 +14,6 @@
 		<module>LoginAgent</module>
 		<module>RegisterAgent</module>
 		<module>SocNetAgent</module>
+		<module>FriendshipAgent</module>
 	</modules>
 </project>

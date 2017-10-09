@@ -5,16 +5,11 @@
     <artifactId>Desktop-Client</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>SocNetAgent</artifactId>
+  <artifactId>FriendshipAgent</artifactId>
   <dependencies>
   	<dependency>
   		<groupId>de</groupId>
   		<artifactId>utility</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>de</groupId>
-  		<artifactId>FriendshipAgent</artifactId>
   		<version>0.0.1-SNAPSHOT</version>
   	</dependency>
   </dependencies>
