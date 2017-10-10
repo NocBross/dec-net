@@ -58,5 +58,6 @@
 		<module>ResourceHub</module>
 		<module>Desktop-Client</module>
 		<module>utility</module>
+		<module>TestDataGen</module>
 	</modules>
 </project>

@@ -4,6 +4,7 @@ import main.java.constants.Port;
 import main.java.service.CustomService;
 import main.java.services.LoginService;
 import main.java.services.RegisterService;
+import main.java.services.WebService;
 import main.java.util.ServerSecrets;
 import main.java.watchdog.ServiceWatchdog;
 
@@ -20,13 +21,15 @@ public class ServerLauncher {
         CustomService[] services = new CustomService[2];
         services[0] = new LoginService(loginServicePort, secrets);
         services[1] = new RegisterService(registerServicePort, secrets);
+        WebService webService = new WebService(Port.WEBSERVICE, secrets);
 
-        ServiceWatchdog serviceWatchdog = new ServiceWatchdog(services);
+        ServiceWatchdog serviceWatchdog = new ServiceWatchdog(services, webService);
 
         // start services
         for (int i = 0; i < services.length; i++) {
             services[i].start();
         }
+        webService.startService();
 
         // start watchdog
         serviceWatchdog.start();

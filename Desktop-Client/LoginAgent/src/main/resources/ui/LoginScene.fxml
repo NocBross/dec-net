@@ -20,13 +20,13 @@
 	<Label text="Benutzername:" GridPane.columnIndex="0"
 		GridPane.rowIndex="1" />
 
-	<TextField fx:id="nicknameField" text=""
+	<TextField fx:id="nicknameField" text="NocBross"
 		GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
 	<Label text="Password:" GridPane.columnIndex="0"
 		GridPane.rowIndex="2" />
 
-	<PasswordField fx:id="passwordField" text=""
+	<PasswordField fx:id="passwordField" text="/9jOB>c!8Mh"
 		GridPane.columnIndex="1" GridPane.rowIndex="2" onKeyReleased="#submitKeyEvent" />
 
 	<HBox spacing="10" alignment="bottom_right" GridPane.columnIndex="1"

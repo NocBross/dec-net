@@ -1,5 +1,7 @@
 package test.java.util;
 
+import java.sql.ResultSet;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,6 +51,14 @@ public class DatabaseConnectorTest {
             Assert.assertTrue(connector.passwordUpdate(TestData.NICKNAME, "123-Test.."));
             Assert.assertTrue(connector.passwordUpdate("some_other_name", "123-Test.."));
             Assert.assertFalse(connector.loginQuery("some_other_name", "123-Test.."));
+
+            // test search
+            ResultSet result = connector.lookingForNickname(TestData.NICKNAME);
+            Assert.assertTrue(result.next());
+            Assert.assertEquals(TestData.NICKNAME, result.getString(1));
+            Assert.assertFalse(result.next());
+            result = connector.lookingForNickname("some_other_name");
+            Assert.assertFalse(result.next());
 
             // test deleteUser
             Assert.assertTrue(connector.deleteUser("some_other_name"));

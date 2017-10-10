@@ -11,10 +11,18 @@ public class ServerSecrets {
 
     private String databaseUser;
     private String databasePassword;
+    private File databaseSecrets;
 
     public ServerSecrets() {
         this.databaseUser = "";
         this.databasePassword = "";
+        databaseSecrets = new File(Database.DATABASE_SECRET_PATH);
+    }
+
+    public ServerSecrets(String path) {
+        this.databaseUser = "";
+        this.databasePassword = "";
+        databaseSecrets = new File(path);
     }
 
     /**
@@ -42,8 +50,7 @@ public class ServerSecrets {
         String line = "";
         String[] splittedLine = null;
 
-        BufferedReader databaseSecretsReader = new BufferedReader(
-                new FileReader(new File(Database.DATABASE_SECRET_PATH)));
+        BufferedReader databaseSecretsReader = new BufferedReader(new FileReader(databaseSecrets));
 
         while ((line = databaseSecretsReader.readLine()) != null) {
             if (line.length() > 0 && line.charAt(0) == SecretKeys.COMMENT_KEY) {

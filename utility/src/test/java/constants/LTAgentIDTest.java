@@ -9,7 +9,7 @@ public class LTAgentIDTest {
 
     @Test
     public void test() {
-        Assert.assertEquals(5, AgentID.values().length);
+        Assert.assertEquals(6, AgentID.values().length);
     }
 
 }

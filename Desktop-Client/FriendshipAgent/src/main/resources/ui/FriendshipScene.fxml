@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Label?>
+
+<ScrollPane fx:id="scrollPane"
+	fx:controller="main.java.controller.FriendshipSceneController"
+	xmlns:fx="http://javafx.com/fxml" fitToWidth="true" minWidth="0.0">
+	<content>
+		<GridPane hgap="1" vgap="3">
+
+			<children>
+				<Label fx:id="searchLabel" text="neuen Kontakt hinzufügen"
+					GridPane.columnIndex="0" GridPane.rowIndex="0" onMouseEntered="#hover"
+					onMouseExited="#noHover" onMouseClicked="#search" />
+
+				<TitledPane fx:id="directMessagePane" text="Direktnachrichten"
+					GridPane.columnIndex="0" GridPane.rowIndex="2" />
+				<TitledPane fx:id="friendPane" text="Freunde / Bekannte"
+					GridPane.columnIndex="0" GridPane.rowIndex="3" />
+				<TitledPane fx:id="groupPane" text="Gruppen"
+					GridPane.columnIndex="0" GridPane.rowIndex="4" />
+			</children>
+			<columnConstraints>
+				<ColumnConstraints hgrow="SOMETIMES" percentWidth="100.0"
+					prefWidth="100.0" />
+			</columnConstraints>
+
+		</GridPane>
+	</content>
+</ScrollPane>

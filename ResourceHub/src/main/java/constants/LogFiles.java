@@ -21,4 +21,9 @@ public class LogFiles {
      * Name of the log file for the RegisterService.
      */
     public static final String REGISTER_LOG = LOG_PREFIX + "register" + LOG_POSTFIX;
+
+    /**
+     * Name of the log file for Webservice.
+     */
+    public static final String WEBSERVICE_LOG = LOG_PREFIX + "webservice" + LOG_POSTFIX;
 }

@@ -3,13 +3,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane>
+<BorderPane fx:controller="main.java.controller.SocNetSceneController"
+	xmlns:fx="http://javafx.com/fxml">
 	<center>
-		<SplitPane id="horizontalSplitPane" dividerPositions="0.25"
+		<SplitPane fx:id="horizontalSplitPane" dividerPositions="0.25"
 			orientation="HORIZONTAL">
 			<items>
-				<AnchorPane style="-fx-background-color: #6AED5E;" />
-				<SplitPane id="verticalSplitPane" dividerPositions="0.67"
+				<SplitPane fx:id="verticalSplitPane" dividerPositions="0.67"
 					orientation="VERTICAL">
 					<items>
 						<AnchorPane style="-fx-background-color: #1650AD;" />

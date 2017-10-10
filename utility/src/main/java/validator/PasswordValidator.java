@@ -2,6 +2,8 @@ package main.java.validator;
 
 import java.util.regex.Pattern;
 
+import main.java.constants.Security;
+
 /**
  * This class checks if the given string is a correct password.<br>
  * A correct password has at least one small letter, one big letter, one number,
@@ -15,29 +17,28 @@ import java.util.regex.Pattern;
 
 public class PasswordValidator implements Validator {
 
-	private final String PASSWORD_PATTERN;
-	private final String POSSIBLE_CHARACTERS;
-	private final Pattern validatorPattern;
+    private final String PASSWORD_PATTERN;
+    private final Pattern validatorPattern;
 
-	public PasswordValidator() {
-		PASSWORD_PATTERN = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[%!#$*+.,-/:;=?@_<>]).{10,})";
-		POSSIBLE_CHARACTERS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ%!#$*+.,-/:;=?@_<>";
-		validatorPattern = Pattern.compile(PASSWORD_PATTERN);
-	}
+    public PasswordValidator() {
+        PASSWORD_PATTERN = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[%!#$*+.,-/:;=?@_<>]).{" + Security.MIN_PASSWORD_LENGTH
+                + ",})";
+        validatorPattern = Pattern.compile(PASSWORD_PATTERN);
+    }
 
-	@Override
-	public boolean validate(String stringToValidate) {
-		boolean isValid = validatorPattern.matcher(stringToValidate).matches();
+    @Override
+    public boolean validate(String stringToValidate) {
+        boolean isValid = validatorPattern.matcher(stringToValidate).matches();
 
-		if (isValid) {
-			for (int i = 0; i < stringToValidate.length(); i++) {
-				if (POSSIBLE_CHARACTERS.indexOf(stringToValidate.charAt(i)) == -1) {
-					isValid = false;
-					break;
-				}
-			}
-		}
+        if (isValid) {
+            for (int i = 0; i < stringToValidate.length(); i++) {
+                if (Security.PASSWORD_CHARACTERS.indexOf(stringToValidate.charAt(i)) == -1) {
+                    isValid = false;
+                    break;
+                }
+            }
+        }
 
-		return isValid;
-	}
+        return isValid;
+    }
 }

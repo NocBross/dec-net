@@ -9,6 +9,7 @@ import main.java.constants.LogFiles;
 import main.java.service.CustomService;
 import main.java.services.LoginService;
 import main.java.services.RegisterService;
+import main.java.services.WebService;
 import main.java.util.ServerSecrets;
 import main.java.watchdog.ServiceWatchdog;
 
@@ -27,10 +28,11 @@ public class ServiceWatchdogTest {
             ServerSecrets secrets = new ServerSecrets();
             secrets.loadServerSecrets();
             int numberOfServices = 2;
+            WebService webservice = new WebService(19999, secrets);
             CustomService[] services = new CustomService[numberOfServices];
             services[0] = new LoginService(20000, secrets);
             services[1] = new RegisterService(20001, secrets);
-            ServiceWatchdog serviceWatchdog = new ServiceWatchdog(services);
+            ServiceWatchdog serviceWatchdog = new ServiceWatchdog(services, webservice);
 
             // start services and watchdog
             for (int i = 0; i < numberOfServices; i++) {
@@ -49,7 +51,7 @@ public class ServiceWatchdogTest {
             Assert.assertTrue(services[0].isAlive());
             Assert.assertTrue(services[1].isAlive());
             Assert.assertFalse(serviceWatchdog.isAlive());
-            serviceWatchdog = new ServiceWatchdog(services);
+            serviceWatchdog = new ServiceWatchdog(services, webservice);
             serviceWatchdog.start();
             services[0].stopService();
             Thread.sleep(60000);

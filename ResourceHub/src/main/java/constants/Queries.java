@@ -48,4 +48,9 @@ public class Queries {
      * Sets the given database active to execute queries at there tables.
      */
     public static final String USE_DATABASE = "USE " + Database.NAME;
+
+    /**
+     * Looks for a specific nickname.
+     */
+    public static final String SEARCH = "SELECT nickname FROM user_data WHERE nickname LIKE CONCAT('%', ?, '%')";
 }
