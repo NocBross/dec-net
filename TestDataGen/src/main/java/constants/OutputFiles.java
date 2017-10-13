@@ -5,7 +5,7 @@ public class OutputFiles {
     /**
      * Prefix of the output file. Defines the path
      */
-    public static final String PATH_PREFIX = "Data/";
+    public static final String PATH_PREFIX = "test_data/";
 
     /**
      * Postfix of the output file. Defines the file ending.

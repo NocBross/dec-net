@@ -7,7 +7,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import com.sun.net.httpserver.HttpServer;
 
 import main.java.constants.WebServiceContext;
-import main.java.context.SearchHandler;
+import main.java.handler.SearchHandler;
 import main.java.util.ServerSecrets;
 
 public class WebService {
