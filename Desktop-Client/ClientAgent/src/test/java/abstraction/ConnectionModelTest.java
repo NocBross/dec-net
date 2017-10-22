@@ -9,7 +9,7 @@ import org.junit.Test;
 import main.java.client_agent.abstraction.ConnectionModel;
 import main.java.connection.TCPConnection;
 import main.java.constants.EndPoint;
-import main.java.constants.Port;
+import main.java.constants.Network;
 import test.java.TestData;
 
 public class ConnectionModelTest {
@@ -26,7 +26,7 @@ public class ConnectionModelTest {
             model.setServerAddress(InetAddress.getByName(TestData.SERVER_ADDRESS));
             Assert.assertTrue(model.addServerConnection(EndPoint.LOGIN_END_POINT));
             Assert.assertNotNull(model.getServerConnection());
-            Assert.assertEquals(Port.LOGIN_SERVICE, model.getServerConnection().getRemotePort());
+            Assert.assertEquals(Network.LOGIN_SERVICE_PORT, model.getServerConnection().getRemotePort());
             Assert.assertFalse(model.addServerConnection(EndPoint.REGISTER_END_POINT));
             Assert.assertTrue(model.deleteServerConnection());
             Assert.assertNull(model.getServerConnection());
@@ -55,7 +55,7 @@ class ConnectionModelTestSever extends Thread {
     @Override
     public void run() {
         try {
-            ServerSocket socket = new ServerSocket(Port.LOGIN_SERVICE);
+            ServerSocket socket = new ServerSocket(Network.LOGIN_SERVICE_PORT);
             TCPConnection connection = new TCPConnection(socket.accept());
 
             connection.close();

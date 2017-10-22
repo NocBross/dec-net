@@ -23,6 +23,11 @@ public class LogFiles {
     public static final String REGISTER_LOG = LOG_PREFIX + "register" + LOG_POSTFIX;
 
     /**
+     * Name of the log file for the ShippingService.
+     */
+    public static final String SHIPPING_LOG = LOG_PREFIX + "shipping" + LOG_POSTFIX;
+
+    /**
      * Name of the log file for Webservice.
      */
     public static final String WEBSERVICE_LOG = LOG_PREFIX + "webservice" + LOG_POSTFIX;

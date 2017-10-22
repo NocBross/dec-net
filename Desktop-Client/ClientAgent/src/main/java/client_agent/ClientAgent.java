@@ -1,9 +1,12 @@
 package main.java.client_agent;
 
+import java.io.ByteArrayOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.apache.jena.rdf.model.Model;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -21,8 +24,11 @@ import main.java.client_agent.abstraction.UserModel;
 import main.java.client_agent.controller.ReceiveController;
 import main.java.client_agent.controller.TransmitController;
 import main.java.constants.AgentID;
+import main.java.constants.Network;
 import main.java.message.LoginMessage;
+import main.java.message.RDFMessage;
 import main.java.message.ReportMessage;
+import main.java.webserver.ClientWebServer;
 
 /**
  * The ClientAgent is the root of the agent tree structure.<br>
@@ -34,172 +40,204 @@ import main.java.message.ReportMessage;
 
 public class ClientAgent extends CustomAgent {
 
-	private Stage primaryStage;
+    private Stage primaryStage;
 
-	private Lock messageLock;
-	private CustomAgent activeAgent;
-	private StringProperty newMessage;
+    private Lock messageLock;
+    private CustomAgent activeAgent;
+    private StringProperty newMessage;
 
-	private ConnectionModel connectionModel;
-	private UserModel userModel;
-	private TransmitModel transmitModel;
+    private ConnectionModel connectionModel;
+    private UserModel userModel;
+    private TransmitModel transmitModel;
 
-	private ReceiveController receiveController;
-	private TransmitController transmitController;
+    private ReceiveController receiveController;
+    private TransmitController transmitController;
 
-	public ClientAgent(Stage primaryStage) throws Exception {
-		super(null, AgentID.CLIENT_AGENT);
-		this.primaryStage = primaryStage;
+    private ClientWebServer webserver;
 
-		addChild(new AuthenticationAgent(this, primaryStage));
-		addChild(new SocNetAgent(this, primaryStage));
 
-		messageLock = new ReentrantLock();
-		activeAgent = children.get(0);
-		newMessage = new SimpleStringProperty();
-		newMessage.addListener(new ChangeListener<String>() {
+    public ClientAgent(Stage primaryStage) throws Exception {
+        super(null, AgentID.CLIENT_AGENT);
+        this.primaryStage = primaryStage;
 
-			@Override
-			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				messageLock.lock();
-				if (newValue != null) {
-					receiveMessage(newValue);
-				}
-				messageLock.unlock();
-			} // end of changed
+        addChild(new AuthenticationAgent(this, primaryStage));
+        addChild(new SocNetAgent(this, primaryStage));
 
-		});
+        messageLock = new ReentrantLock();
+        activeAgent = children.get(0);
+        newMessage = new SimpleStringProperty();
+        newMessage.addListener(new ChangeListener<String>() {
 
-		createModels();
-		createController();
-		startController();
-	}
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                messageLock.lock();
+                if(newValue != null) {
+                    receiveMessage(newValue);
+                }
+                messageLock.unlock();
+            }
 
-	public void close() {
-		System.exit(0);
-	}
+        });
 
-	@Override
-	public Parent getScene() {
-		return activeAgent.getScene();
-	}
+        createModels();
+        createController();
+        startController();
+    }
 
-	@Override
-	public void receiveMessage(String message) {
-		handleReportMessage(message);
-		scatterMessage(message);
 
-		newMessage.set(null);
-	}
+    public void close() {
+        System.exit(0);
+    }
 
-	@Override
-	public void scatterMessage(String message) {
-		for (int i = 0; i < children.size(); i++) {
-			children.get(i).receiveMessage(message);
-		}
-	}
 
-	@Override
-	public void sendMessage(String destination, String message) {
-		transmitController.addMessage(destination, message);
-		handleLoginMessage(message);
-	}
+    @Override
+    public Parent getScene() {
+        return activeAgent.getScene();
+    }
 
-	@Override
-	public void switchAgent(AgentID destinationAgent) {
-		Platform.runLater(new Runnable() {
 
-			@Override
-			public void run() {
-				for (int i = 0; i < children.size(); i++) {
-					if (children.get(i).getID() == destinationAgent) {
-						primaryStage.getScene().setRoot(children.get(i).getScene());
-						activeAgent = children.get(i);
-						break;
-					}
-				}
-			}
+    @Override
+    public void receiveMessage(String message) {
+        handleReportMessage(message);
+        scatterMessage(message);
 
-		});
-	}
+        newMessage.set(null);
+    }
 
-	/**
-	 * Changes the message in the string property.
-	 * 
-	 * @param newMessage
-	 *            - new received message
-	 */
-	public void updateMessage(String newMessage) {
-		messageLock.lock();
-		this.newMessage.setValue(newMessage);
-		messageLock.unlock();
-	}
 
-	/**
-	 * Creates instances of all necessary controllers for the client agent.
-	 * 
-	 * @throws UnknownHostException
-	 *             - if no IP address for the host could be found, or if a scope_id
-	 *             was specified for a global IPv6 address.
-	 */
-	private void createController() throws UnknownHostException {
-		receiveController = new ReceiveController(connectionModel, this);
-		transmitController = new TransmitController(connectionModel, transmitModel);
-	}
+    @Override
+    public void scatterMessage(String message) {
+        for(int i = 0; i < children.size(); i++ ) {
+            children.get(i).receiveMessage(message);
+        }
+    }
 
-	/**
-	 * Creates instances of all necessary models for the client agent.
-	 * 
-	 * @throws UnknownHostException
-	 */
-	private void createModels() throws Exception {
-		connectionModel = new ConnectionModel(InetAddress.getByName("localhost"));
-		userModel = new UserModel();
-		transmitModel = new TransmitModel();
-	}
 
-	/**
-	 * Stored the mail address and password from an outgoing login message in the
-	 * local model.
-	 * 
-	 * @param message
-	 *            - login message
-	 */
-	private void handleLoginMessage(String message) {
-		LoginMessage loginMessage = LoginMessage.parse(message);
-		if (loginMessage != null) {
-			userModel.setNickname(loginMessage.getNickname());
-			userModel.setPassword(loginMessage.getPassword());
-		}
-	}
+    @Override
+    public void sendMessage(String destination, String message) {
+        transmitController.addMessage(destination, message);
+        handleLoginMessage(message);
+    }
 
-	/**
-	 * Handles an incoming report message.
-	 * 
-	 * @param message
-	 *            - report message
-	 */
-	private void handleReportMessage(String message) {
-		ReportMessage reportMessage = ReportMessage.parse(message);
-		if (reportMessage != null) {
-			if (reportMessage.getReferencedMessage().equals(LoginMessage.ID) && reportMessage.getResult()) {
-			} else {
-				receiveController.stopController();
 
-				connectionModel.lockServerConnection();
-				connectionModel.deleteServerConnection();
-				receiveController = new ReceiveController(connectionModel, this);
-				receiveController.start();
-				connectionModel.unlockServerConnection();
-			}
-		}
-	}
+    @Override
+    public void switchAgent(AgentID destinationAgent) {
+        Platform.runLater(new Runnable() {
 
-	/**
-	 * Starts all necessary controllers.
-	 */
-	private void startController() {
-		receiveController.start();
-		transmitController.start();
-	}
+            @Override
+            public void run() {
+                for(int i = 0; i < children.size(); i++ ) {
+                    if(children.get(i).getID() == destinationAgent) {
+                        primaryStage.getScene().setRoot(children.get(i).getScene());
+                        activeAgent = children.get(i);
+                        break;
+                    }
+                }
+            }
+
+        });
+    }
+
+
+    /**
+     * Changes the message in the string property.
+     * 
+     * @param newMessage
+     *        - new received message
+     */
+    public void updateMessage(String newMessage) {
+        messageLock.lock();
+        this.newMessage.setValue(newMessage);
+        messageLock.unlock();
+    }
+
+
+    @Override
+    public void storeRDFModel(String resourcePath, Model rdfModel) {
+        try {
+            ByteArrayOutputStream stringWriter = new ByteArrayOutputStream();
+            rdfModel.write(stringWriter);
+            RDFMessage rdfMessage = new RDFMessage(userModel.getNickname(), stringWriter.toString());
+            String url = Network.LOCALHOST_URL + resourcePath;
+            transmitController.addMessage(url, rdfMessage.getMessage());
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Creates instances of all necessary controllers for the client agent.
+     * 
+     * @throws Exception
+     */
+    private void createController() throws Exception {
+        receiveController = new ReceiveController(connectionModel, this);
+        transmitController = new TransmitController(connectionModel, transmitModel);
+        webserver = new ClientWebServer(Network.CLIENT_WEBSERVER_PORT);
+    }
+
+
+    /**
+     * Creates instances of all necessary models for the client agent.
+     * 
+     * @throws UnknownHostException
+     */
+    private void createModels() throws Exception {
+        connectionModel = new ConnectionModel(InetAddress.getByName("localhost"));
+        userModel = new UserModel();
+        transmitModel = new TransmitModel();
+    }
+
+
+    /**
+     * Stored the mail address and password from an outgoing login message in
+     * the local model.
+     * 
+     * @param message
+     *        - login message
+     */
+    private void handleLoginMessage(String message) {
+        LoginMessage loginMessage = LoginMessage.parse(message);
+        if(loginMessage != null) {
+            userModel.setNickname(loginMessage.getNickname());
+            userModel.setPassword(loginMessage.getPassword());
+
+            String url = "http://localhost:" + Network.CLIENT_WEBSERVER_PORT + "/" + loginMessage.getNickname()
+                    + "/profile";
+            transmitController.addMessage(url, null);
+        }
+    }
+
+
+    /**
+     * Handles an incoming report message.
+     * 
+     * @param message
+     *        - report message
+     */
+    private void handleReportMessage(String message) {
+        ReportMessage reportMessage = ReportMessage.parse(message);
+        if(reportMessage != null) {
+            if(reportMessage.getReferencedMessage().equals(LoginMessage.ID) && reportMessage.getResult()) {} else {
+                receiveController.stopController();
+
+                connectionModel.lockServerConnection();
+                connectionModel.deleteServerConnection();
+                receiveController = new ReceiveController(connectionModel, this);
+                receiveController.start();
+                connectionModel.unlockServerConnection();
+            }
+        }
+    }
+
+
+    /**
+     * Starts all necessary controllers.
+     */
+    private void startController() {
+        receiveController.start();
+        transmitController.start();
+        webserver.start();
+    }
 }

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane fx:controller="main.java.controller.NewFriendshipGroupDialogController"
+	xmlns:fx="http://javafx.com/fxml">
+	<top>
+		<Text fx:id="newFriendshipGroupHeaderText" Text="Neuen Bekanntenkreis hinzufügen" />
+	</top>
+	<center>
+		<HBox spacing="10" alignment="center">
+			<Text fx:id="friendshipGroupText" Text="Bekanntenkreis:" />
+			<TextField fx:id="friendshipGroupTextField" Text=""
+				onKeyReleased="#handleKeyEvent" />
+		</HBox>
+	</center>
+	<bottom>
+		<HBox spacing="10" alignment="bottom_right">
+			<Button fx:id="addButton" Text="Hinzufügen" onAction="#addButtonAction" />
+			<Button fx:id="cancelButton" Text="Abbrechen" onAction="#cancelButtonAction" />
+		</HBox>
+	</bottom>
+</BorderPane>

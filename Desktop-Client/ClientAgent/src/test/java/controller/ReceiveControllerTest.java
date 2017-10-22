@@ -16,7 +16,7 @@ import main.java.client_agent.abstraction.ConnectionModel;
 import main.java.client_agent.controller.ReceiveController;
 import main.java.connection.TCPConnection;
 import main.java.constants.EndPoint;
-import main.java.constants.Port;
+import main.java.constants.Network;
 
 public class ReceiveControllerTest {
 
@@ -27,7 +27,7 @@ public class ReceiveControllerTest {
             ClientAgent agent = Mockito.mock(ClientAgent.class);
             ConnectionModel connectionModel = new ConnectionModel(InetAddress.getByName("localhost"));
             ReceiveController receiveController = new ReceiveController(connectionModel, agent);
-            ReceiveControllerTestServer testServer = new ReceiveControllerTestServer(Port.LOGIN_SERVICE, message);
+            ReceiveControllerTestServer testServer = new ReceiveControllerTestServer(Network.LOGIN_SERVICE_PORT, message);
 
             // initialize test
             testServer.start();

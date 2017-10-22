@@ -10,6 +10,11 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
 
 <ScrollPane fx:id="scrollPane"
 	fx:controller="main.java.controller.FriendshipSceneController"
@@ -18,16 +23,70 @@
 		<GridPane hgap="1" vgap="3">
 
 			<children>
-				<Label fx:id="searchLabel" text="neuen Kontakt hinzufügen"
-					GridPane.columnIndex="0" GridPane.rowIndex="0" onMouseEntered="#hover"
-					onMouseExited="#noHover" onMouseClicked="#search" />
-
 				<TitledPane fx:id="directMessagePane" text="Direktnachrichten"
-					GridPane.columnIndex="0" GridPane.rowIndex="2" />
+					GridPane.columnIndex="0" GridPane.rowIndex="2">
+					<BorderPane>
+						<top>
+							<Button fx:id="addNewDirectMessageButton" text="neuen Direktnachricht hinzufügen"
+								onAction="#newDirectMessageButtonAction" />
+						</top>
+						<center>
+							<ListView fx:id="directMessageList" onMousePressed="#openDirectMessageListContext"
+								onMouseReleased="#openDirectMessageListContext" />
+						</center>
+					</BorderPane>
+					<contextMenu>
+						<ContextMenu>
+							<items>
+								<MenuItem text="Profil ansehen" />
+								<MenuItem text="als Freund hinzufügen" onAction="#onMoveToFriend" />
+								<MenuItem text="löschen" onAction="#onDeleteDirect" />
+							</items>
+						</ContextMenu>
+					</contextMenu>
+				</TitledPane>
 				<TitledPane fx:id="friendPane" text="Freunde / Bekannte"
-					GridPane.columnIndex="0" GridPane.rowIndex="3" />
+					GridPane.columnIndex="0" GridPane.rowIndex="3">
+					<BorderPane>
+						<top>
+							<Button fx:id="addNewFriendButton" text="neuen Freund hinzufügen"
+								onAction="#newFriendButtonAction" />
+						</top>
+						<center>
+							<ListView fx:id="friendList" onMousePressed="#openFriendListContext"
+								onMouseReleased="#openFriendListContext" />
+						</center>
+					</BorderPane>
+					<contextMenu>
+						<ContextMenu>
+							<items>
+								<MenuItem text="Profil ansehen" />
+								<Menu text="Bekanntenkreis">
+									<MenuItem text="neuen Bekanntenkreis hinzufügen"
+										onAction="#onAddNewFriendshipGroup" />
+									<MenuItem text="einem bestehenden Bekanntenkreis hinzufügen" 
+										onAction="#onAddToFriendshipGroup" />
+								</Menu>
+								<Menu text="Löschen / Verschieben">
+									<MenuItem text="zu Direcknachrichten verschieben"
+										onAction="#onMoveToDirect" />
+									<MenuItem text="endgültig löschen" onAction="#onDeleteFriend" />
+								</Menu>
+							</items>
+						</ContextMenu>
+					</contextMenu>
+				</TitledPane>
 				<TitledPane fx:id="groupPane" text="Gruppen"
-					GridPane.columnIndex="0" GridPane.rowIndex="4" />
+					GridPane.columnIndex="0" GridPane.rowIndex="4">
+					<BorderPane>
+						<top>
+							<Button fx:id="addNewGroupButton" text="neue Gruppe hinzufügen" />
+						</top>
+						<center>
+							<ListView fx:id="groupList" />
+						</center>
+					</BorderPane>
+				</TitledPane>
 			</children>
 			<columnConstraints>
 				<ColumnConstraints hgrow="SOMETIMES" percentWidth="100.0"

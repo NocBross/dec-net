@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import main.java.connection.TCPConnection;
 import main.java.constants.EndPoint;
-import main.java.constants.Port;
+import main.java.constants.Network;
 
 public class ConnectionModel {
 
@@ -33,8 +33,8 @@ public class ConnectionModel {
         serverConnectionLock = new ReentrantLock();
 
         portMap = new HashMap<String, Integer>();
-        portMap.put(EndPoint.LOGIN_END_POINT, Port.LOGIN_SERVICE);
-        portMap.put(EndPoint.REGISTER_END_POINT, Port.REGISTER_SERVICE);
+        portMap.put(EndPoint.LOGIN_END_POINT, Network.LOGIN_SERVICE_PORT);
+        portMap.put(EndPoint.REGISTER_END_POINT, Network.REGISTER_SERVICE_PORT);
 
         serverConnection = null;
         httpConnections = new LinkedList<HttpURLConnection>();

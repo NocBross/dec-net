@@ -1,7 +1,7 @@
 package main.java.abstraction;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TitledPane;
@@ -12,17 +12,30 @@ public class FriendshipSceneComponents {
     protected ScrollPane scrollPane;
 
     @FXML
-    protected Label searchLabel;
+    protected TitledPane directMessagePane;
 
     @FXML
-    protected TitledPane directMessagePane;
+    protected Button addNewDirectMessageButton;
+
+    @FXML
+    protected ListView<String> directMessageList;
 
     @FXML
     protected TitledPane friendPane;
 
     @FXML
+    protected Button addNewFriendButton;
+
+    @FXML
+    protected ListView<String> friendList;
+
+    @FXML
     protected TitledPane groupPane;
 
-    protected ListView<String> directMessageList;
+    @FXML
+    protected Button addNewGroupButton;
+
+    @FXML
+    protected ListView<String> groupList;
 
 }

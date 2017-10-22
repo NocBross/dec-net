@@ -14,6 +14,7 @@ import main.java.message.LoginMessage;
 import main.java.message.ReportMessage;
 import main.java.service.CustomService;
 import main.java.services.LoginService;
+import main.java.services.ShippingService;
 import main.java.util.DatabaseConnector;
 import main.java.util.ServerSecrets;
 import test.java.TestData;
@@ -25,7 +26,8 @@ public class LoginServiceTest {
         try {
             ServerSecrets secrets = new ServerSecrets();
             secrets.loadServerSecrets();
-            CustomService loginService = new LoginService(TestData.SERVER_PORT, secrets);
+            ShippingService shippingService = new ShippingService();
+            CustomService loginService = new LoginService(TestData.SERVER_PORT, secrets, shippingService);
             loginService.start();
             Thread.sleep(50);
 
@@ -38,11 +40,12 @@ public class LoginServiceTest {
             loginService.stopService();
             loginService.join();
             Assert.assertFalse(loginService.isAlive());
-        } catch (Exception e) {
+        } catch(Exception e) {
             e.printStackTrace();
             throw new AssertionError();
         }
     }
+
 
     /**
      * Tests the exceptions which are thrown by the login service.
@@ -59,7 +62,7 @@ public class LoginServiceTest {
             File logFile = new File(LogFiles.LOGIN_LOG);
             BufferedReader reader = new BufferedReader(new FileReader(logFile));
             String line = reader.readLine();
-            Assert.assertNotEquals(-1, line.indexOf("something is wrong with the streams or the incoming message"));
+            Assert.assertNotEquals( -1, line.indexOf("something is wrong with the streams or the incoming message"));
             line = reader.readLine();
             Assert.assertEquals("java.io.EOFException", line);
 
@@ -70,11 +73,12 @@ public class LoginServiceTest {
             // clean up
             reader.close();
             logFile.delete();
-        } catch (Exception e) {
+        } catch(Exception e) {
             e.printStackTrace();
             throw new AssertionError();
         }
     }
+
 
     /**
      * Tests the login service when a not registered user wants to login.
@@ -91,7 +95,7 @@ public class LoginServiceTest {
             ReportMessage report = null;
             do {
                 report = ReportMessage.parse(connection.getData());
-            } while (report == null);
+            } while(report == null);
 
             Assert.assertFalse(report.getResult());
             Assert.assertEquals("Benutzername oder Passwort falsch!", report.getErrorCode());
@@ -99,11 +103,12 @@ public class LoginServiceTest {
 
             // clean up
             connection.close();
-        } catch (Exception e) {
+        } catch(Exception e) {
             e.printStackTrace();
             throw new AssertionError();
         }
     }
+
 
     /**
      * Tests the login service when a registered user wants to login.
@@ -111,8 +116,8 @@ public class LoginServiceTest {
     private void testRegisteredUser(ServerSecrets secrets) {
         try {
             // initialize test
-            DatabaseConnector database = new DatabaseConnector(secrets.getDatabaseUser(),
-                    secrets.getDatabasePassword());
+            DatabaseConnector database = new DatabaseConnector(secrets.getDatabaseUser(), secrets
+                    .getDatabasePassword());
             database.insertNewUser(TestData.NICKNAME, TestData.PASSWORD);
 
             // run test
@@ -125,7 +130,7 @@ public class LoginServiceTest {
             ReportMessage report = null;
             do {
                 report = ReportMessage.parse(connection.getData());
-            } while (report == null);
+            } while(report == null);
 
             Assert.assertTrue(report.getResult());
             Assert.assertEquals(LoginMessage.ID, report.getReferencedMessage());
@@ -133,7 +138,7 @@ public class LoginServiceTest {
             // clean up
             connection.close();
             database.deleteUser(TestData.NICKNAME);
-        } catch (Exception e) {
+        } catch(Exception e) {
             e.printStackTrace();
             throw new AssertionError();
         }

@@ -11,7 +11,7 @@ import main.java.client_agent.abstraction.TransmitModel;
 import main.java.client_agent.controller.TransmitController;
 import main.java.connection.TCPConnection;
 import main.java.constants.EndPoint;
-import main.java.constants.Port;
+import main.java.constants.Network;
 
 public class TransmitControllerTest {
 
@@ -22,7 +22,7 @@ public class TransmitControllerTest {
             ConnectionModel connectionModel = new ConnectionModel(InetAddress.getByName("localhost"));
             TransmitModel transmitModel = new TransmitModel();
             TransmitController transmitController = new TransmitController(connectionModel, transmitModel);
-            TransmitControllerTestServer server = new TransmitControllerTestServer(Port.LOGIN_SERVICE, message);
+            TransmitControllerTestServer server = new TransmitControllerTestServer(Network.LOGIN_SERVICE_PORT, message);
 
             // initialize test
             server.start();

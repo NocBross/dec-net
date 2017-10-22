@@ -13,49 +13,60 @@ import main.java.util.ServerSecrets;
 
 public class LoginService extends CustomService {
 
-	private DatabaseConnector database;
+    private DatabaseConnector database;
+    private ShippingService shippingService;
 
-	public LoginService(int port, ServerSecrets secrets) throws IOException {
-		super(port, LogFiles.LOGIN_LOG);
-		database = new DatabaseConnector(secrets.getDatabaseUser(), secrets.getDatabasePassword());
-	}
 
-	@Override
-	protected void service() {
-		TCPConnection clientConnection = null;
-		LoginMessage message = null;
+    public LoginService(int port, ServerSecrets secrets, ShippingService shippingService) throws IOException {
+        super(port, LogFiles.LOGIN_LOG);
+        database = new DatabaseConnector(secrets.getDatabaseUser(), secrets.getDatabasePassword());
+        this.shippingService = shippingService;
+    }
 
-		try {
-			clientConnection = new TCPConnection(socket.accept());
 
-			do {
-				message = LoginMessage.parse(clientConnection.getData());
-			} while (message == null);
+    @Override
+    protected void service() {
+        TCPConnection clientConnection = null;
+        LoginMessage message = null;
 
-			String nickname = message.getNickname();
-			String password = message.getPassword();
-			ReportMessage report = new ReportMessage();
-			report.setReferencedMessage(message.getType());
-			if (database.loginQuery(nickname, password)) {
-				report.setResult(true);
-			} else {
-				report.setResult(false);
-				report.setErrorCode("Benutzername oder Passwort falsch!");
-			}
+        try {
+            clientConnection = new TCPConnection(socket.accept());
 
-			clientConnection.sendData(report.getMessage());
-			clientConnection.close();
-		} catch (SocketTimeoutException ste) {
-			if (clientConnection != null) {
-				try {
-					clientConnection.close();
-				} catch (IOException ioe) {
-					logger.writeLog("can not close the connection after SocketTimeout", ioe);
-				}
-			}
-		} catch (Exception e) {
-			logger.writeLog("something is wrong with the streams or the incoming message", e);
-		}
-	}
+            do {
+                message = LoginMessage.parse(clientConnection.getData());
+            } while(message == null);
+
+            String nickname = message.getNickname();
+            String password = message.getPassword();
+            ReportMessage report = new ReportMessage();
+            report.setReferencedMessage(message.getType());
+            if(database.loginQuery(nickname, password)) {
+                report.setResult(true);
+                // if(shippingService.addConnection(nickname, clientConnection))
+                // {
+                // report.setResult(true);
+                // } else {
+                // report.setResult(false);
+                // report.setErrorCode("Benutzer ist bereits angemeldet.");
+                // }
+            } else {
+                report.setResult(false);
+                report.setErrorCode("Benutzername oder Passwort falsch!");
+            }
+
+            clientConnection.sendData(report.getMessage());
+            clientConnection.close();
+        } catch(SocketTimeoutException ste) {
+            if(clientConnection != null) {
+                try {
+                    clientConnection.close();
+                } catch(IOException ioe) {
+                    logger.writeLog("can not close the connection after SocketTimeout", ioe);
+                }
+            }
+        } catch(Exception e) {
+            logger.writeLog("something is wrong with the streams or the incoming message", e);
+        }
+    }
 
 }
