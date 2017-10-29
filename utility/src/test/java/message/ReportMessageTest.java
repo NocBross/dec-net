@@ -16,7 +16,7 @@ public class ReportMessageTest {
         Assert.assertEquals("report", message.getType());
         Assert.assertNull(message.getReferencedMessage());
         Assert.assertFalse(message.getResult());
-        Assert.assertNull(message.getErrorCode());
+        Assert.assertEquals(-1, message.getStatusCode());
 
         // test referenced message
         String refMessage = "login";
@@ -33,11 +33,11 @@ public class ReportMessageTest {
         Assert.assertTrue(message.getResult());
 
         // test error code
-        String errorCode = "test error code";
-        Assert.assertTrue(message.setErrorCode(errorCode));
-        Assert.assertFalse(message.setErrorCode(errorCode));
-        Assert.assertFalse(message.setErrorCode("another code"));
-        Assert.assertEquals(errorCode, message.getErrorCode());
+        int statusCode = 1896514;
+        Assert.assertTrue(message.setStatusCode(statusCode));
+        Assert.assertFalse(message.setStatusCode(statusCode));
+        Assert.assertFalse(message.setStatusCode(-8));
+        Assert.assertEquals(statusCode, message.getStatusCode());
 
         // test convert
         String testString = null;

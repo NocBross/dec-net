@@ -7,7 +7,7 @@ import java.util.Map;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import main.java.constants.Status;
+import main.java.constants.UserStatus;
 
 /**
  * This message is used by the client to get all friend which are currently
@@ -17,18 +17,18 @@ import main.java.constants.Status;
  *
  */
 
-public class StatusMessage extends LTMessage {
+public class StatusMessage extends Message {
 
     // attributes
     public static final String ID = "status";
-    private Map<String, Status> users;
+    private Map<String, UserStatus> users;
     // end of attributes
 
 
     // constructor
     public StatusMessage() {
         super(ID);
-        users = new HashMap<String, Status>();
+        users = new HashMap<String, UserStatus>();
     }
     // end of constructor
 
@@ -57,16 +57,16 @@ public class StatusMessage extends LTMessage {
                         if(key.equals(TYPE)) {
                             continue;
                         } else {
-                            Status status = null;
+                            UserStatus status = null;
                             switch(jsonMessage.getString(key)) {
                                 case "offline":
-                                    status = Status.OFFLINE;
+                                    status = UserStatus.OFFLINE;
                                     break;
                                 case "online":
-                                    status = Status.ONLINE;
+                                    status = UserStatus.ONLINE;
                                     break;
                                 case "busy":
-                                    status = Status.BUSY;
+                                    status = UserStatus.BUSY;
                                     break;
                             }
                             message.addUser(key, status);
@@ -96,7 +96,7 @@ public class StatusMessage extends LTMessage {
      * @return true in case of success<br>
      *         false in case of the user already added or an error occurs
      */
-    public boolean addUser(String user, Status status) {
+    public boolean addUser(String user, UserStatus status) {
         if(users.containsKey(user) || status == null) {
             return false;
         } else {
@@ -113,7 +113,7 @@ public class StatusMessage extends LTMessage {
      *        - nickname of the user
      * @return status of the user or null if no value is mapped to the given key
      */
-    public Status getStatus(String key) {
+    public UserStatus getStatus(String key) {
         return users.get(key);
     } // end of getStatus
 

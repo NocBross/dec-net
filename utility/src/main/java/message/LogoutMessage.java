@@ -11,7 +11,7 @@ import org.json.JSONTokener;
  *
  */
 
-public class LogoutMessage extends LTMessage {
+public class LogoutMessage extends Message {
 
 	public static final String ID = "logout";
 	private static final String SENDER_NICKNAME = "sender_mail";

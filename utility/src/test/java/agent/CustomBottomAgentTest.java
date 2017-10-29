@@ -12,16 +12,42 @@ import org.mockito.stubbing.Answer;
 
 import main.java.agent.CustomAgent;
 import main.java.agent.CustomBottomAgent;
+import main.java.agent.RootController;
 import main.java.constants.AgentID;
 
 public class CustomBottomAgentTest {
+
+    private class TestAgent extends CustomBottomAgent {
+
+        public TestAgent(CustomAgent parent, AgentID ID) {
+            super(parent, ID);
+        }
+
+        public void setRootController(RootController controller) {
+            agentSceneController = controller;
+        }
+
+    }
 
     @Test
     public void test() {
         String destination = "test destination";
         String message = "test message";
         CustomAgent parent = Mockito.mock(CustomAgent.class);
-        CustomBottomAgent agent = new CustomBottomAgent(parent, AgentID.CLIENT_AGENT);
+        RootController controller = Mockito.mock(RootController.class);
+        TestAgent agent = new TestAgent(parent, AgentID.CLIENT_AGENT);
+
+        List<String> receiveMessageListSpy = new LinkedList<String>();
+        Mockito.doAnswer(new Answer<String>() {
+
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+                receiveMessageListSpy.add((String) invocation.getArguments()[0]);
+                return null;
+            }
+
+        }).when(controller).receiveResult(Mockito.anyString());
+        agent.setRootController(controller);
 
         List<String> scatterMessageListSpy = new LinkedList<String>();
         Mockito.doAnswer(new Answer<String>() {
@@ -73,12 +99,10 @@ public class CustomBottomAgentTest {
 
         Assert.assertEquals(AgentID.CLIENT_AGENT, agent.getID());
         Assert.assertNull(agent.getScene());
-        try {
-            agent.receiveMessage("test message");
-            throw new AssertionError();
-        } catch (Exception e) {
 
-        }
+        agent.receiveMessage(message);
+        Assert.assertEquals(1, receiveMessageListSpy.size());
+        Assert.assertEquals(message, receiveMessageListSpy.get(0));
 
         agent.scatterMessage(message);
         Assert.assertEquals(1, scatterMessageListSpy.size());

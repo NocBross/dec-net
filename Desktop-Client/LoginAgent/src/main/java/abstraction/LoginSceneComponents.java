@@ -2,27 +2,31 @@ package main.java.abstraction;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 
 public class LoginSceneComponents {
 
-	@FXML
-	protected Button loginButton;
+    @FXML
+    protected Label userIDLabel;
 
-	@FXML
-	protected TextField nicknameField;
+    @FXML
+    protected TextField userIDField;
 
-	@FXML
-	protected PasswordField passwordField;
+    @FXML
+    protected Label passwordLabel;
 
-	@FXML
-	protected Button registerButton;
+    @FXML
+    protected PasswordField passwordField;
 
-	@FXML
-	protected Text resetText;
+    @FXML
+    protected Button loginButton;
 
-	@FXML
-	protected Text resultText;
+    @FXML
+    protected Button registerButton;
+
+    @FXML
+    protected Text resultText;
 }

@@ -13,11 +13,6 @@ public class WebServiceConstants {
     public static final String SEARCH_SEPARATOR = "?";
 
     /**
-     * Defines the character which splits two different results.
-     */
-    public static final String RESULT_SEPARTOR = ";";
-
-    /**
      * Defines the character which splits the key and the value.
      */
     public static final String KEY_VALUE_SEPARATOR = "=";

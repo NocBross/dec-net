@@ -18,7 +18,6 @@ public class UserProfile {
     private ObservableList<String> directMessages;
     private ObservableList<String> friends;
 
-
     private UserProfile() {
         searchType = null;
         userID = null;
@@ -27,81 +26,72 @@ public class UserProfile {
         friends = FXCollections.observableArrayList();
     }
 
-
     public static UserProfile getInstance() {
-        if(profile == null) {
+        if (profile == null) {
             profile = new UserProfile();
         }
 
         return profile;
     }
 
-
     public void addDirectMessage(String nickname) {
-        directMessages.add(nickname);
-        if(friends.contains(nickname)) {
+        if (!directMessages.contains(nickname)) {
+            directMessages.add(nickname);
+        }
+        if (friends.contains(nickname)) {
             friends.remove(nickname);
         }
     }
 
-
     public void addFriend(String nickname) {
-        friends.add(nickname);
-        if(directMessages.contains(nickname)) {
+        if (!friends.contains(nickname)) {
+            friends.add(nickname);
+        }
+        if (directMessages.contains(nickname)) {
             directMessages.remove(nickname);
         }
     }
 
-
     public void addFriendToFriendshipGroup(String nickname, String friendshipGroup) {
         List<String> members = friendshipGroupMembers.get(friendshipGroup);
-        if(members == null) {
+        if (members == null) {
             friendshipGroupMembers.put(friendshipGroup, new ArrayList<String>(20));
             members = friendshipGroupMembers.get(friendshipGroup);
         }
         members.add(nickname);
     }
 
-
     public void deleteDirectMessage(String nickname) {
         directMessages.remove(nickname);
     }
-
 
     public void deleteFriend(String nickname) {
         friends.remove(nickname);
     }
 
-
     public ObservableList<String> getDirectMessages() {
         return directMessages;
     }
-
 
     public ObservableList<String> getFriends() {
         return friends;
     }
 
-
     public List<String> getFriendshipGroups() {
         return new ArrayList<String>(friendshipGroupMembers.keySet());
     }
-
 
     public SearchType getSearchType() {
         return searchType;
     }
 
-
     public String getUserID() {
         return userID;
     }
 
-
     public void setSearchType(SearchType type) {
         searchType = type;
     }
-
 
     public void setUserID(String userID) {
         this.userID = userID;

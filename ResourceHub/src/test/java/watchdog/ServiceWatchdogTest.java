@@ -8,7 +8,6 @@ import org.junit.Test;
 import main.java.constants.LogFiles;
 import main.java.service.CustomService;
 import main.java.services.LoginService;
-import main.java.services.RegisterService;
 import main.java.services.ShippingService;
 import main.java.services.WebService;
 import main.java.util.ServerSecrets;
@@ -28,16 +27,15 @@ public class ServiceWatchdogTest {
         try {
             ServerSecrets secrets = new ServerSecrets();
             secrets.loadServerSecrets();
-            int numberOfServices = 3;
+            int numberOfServices = 2;
             WebService webservice = new WebService(19999, secrets);
             CustomService[] services = new CustomService[numberOfServices];
             services[0] = new ShippingService();
             services[1] = new LoginService(20000, secrets, (ShippingService) services[0]);
-            services[2] = new RegisterService(20001, secrets);
             ServiceWatchdog serviceWatchdog = new ServiceWatchdog(services, webservice);
 
             // start services and watchdog
-            for(int i = 0; i < numberOfServices; i++ ) {
+            for (int i = 0; i < numberOfServices; i++) {
                 services[i].start();
             }
             serviceWatchdog.start();
@@ -66,7 +64,7 @@ public class ServiceWatchdogTest {
             file.delete();
             file = new File(LogFiles.REGISTER_LOG);
             file.delete();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new AssertionError();
         }

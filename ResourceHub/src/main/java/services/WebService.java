@@ -7,6 +7,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import com.sun.net.httpserver.HttpServer;
 
 import main.java.constants.WebServiceContext;
+import main.java.handler.RegisterHandler;
 import main.java.handler.SearchHandler;
 import main.java.util.ServerSecrets;
 
@@ -18,6 +19,7 @@ public class WebService {
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.setExecutor(new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors()));
 
+        server.createContext(WebServiceContext.REGISTER, new RegisterHandler(secrets));
         server.createContext(WebServiceContext.SEARCH, new SearchHandler(secrets));
     }
 

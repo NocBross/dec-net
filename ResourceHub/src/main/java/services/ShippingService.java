@@ -13,6 +13,7 @@ import org.json.JSONTokener;
 
 import main.java.connection.TCPConnection;
 import main.java.constants.LogFiles;
+import main.java.message.LogoutMessage;
 import main.java.service.CustomService;
 
 public class ShippingService extends CustomService {
@@ -21,99 +22,89 @@ public class ShippingService extends CustomService {
     private Map<String, TCPConnection> connections;
     private Lock connectionLock;
 
-
     public ShippingService() throws IOException {
-        super( -1, LogFiles.SHIPPING_LOG);
+        super(-1, LogFiles.SHIPPING_LOG);
 
         connectionIterator = null;
         connections = new HashMap<String, TCPConnection>();
         connectionLock = new ReentrantLock();
     }
 
-
     /**
      * Adds a new connection to the service.
      * 
      * @param nickname
-     *        - hashed mail address of the user
+     *            - hashed mail address of the user
      * @param newClient
-     *        - socket of the connection
+     *            - socket of the connection
      * @return true in case of success<br>
      *         false in case of the user is already connected
      */
-    public boolean addConnection(String nickname, TCPConnection newConnection) {
-        boolean result = false;
+    public void addConnection(String nickname, TCPConnection newConnection) {
         connectionLock.lock();
-
         connections.put(nickname, newConnection);
-        if(connections.get(nickname) != null) {
-            result = true;
-        }
-
         connectionLock.unlock();
-        return result;
     }
-
 
     @Override
     protected void service() {
-        String key = "";
-
         connectionLock.lock();
         connectionIterator = connections.keySet().iterator();
-        while(connectionIterator.hasNext()) {
-            key = connectionIterator.next();
+        while (connectionIterator.hasNext()) {
+            String key = connectionIterator.next();
             try {
-                if(connections.get(key).hasData()) {
+                if (connections.get(key).hasData()) {
                     try {
                         String message = connections.get(key).getData();
-                        while(message.equals("1") && connections.get(key).hasData()) {
+                        while (message.equals("1") && connections.get(key).hasData()) {
                             message = connections.get(key).getData();
                         }
 
-                        if( !message.equals("1")) {
+                        if (!message.equals("1")) {
                             JSONTokener parser = new JSONTokener(message);
                             JSONObject jsonMessage = (JSONObject) parser.nextValue();
 
-                            switch(jsonMessage.getString("type")) {
+                            switch (jsonMessage.getString("type")) {
+                                case LogoutMessage.ID:
+                                    deleteConnection(key, connectionIterator);
+                                    break;
                                 default:
                                     break;
                             }
                         }
-                    } catch(ClassCastException cce) {
+                    } catch (ClassCastException cce) {
                         logger.writeLog("cannot parse incoming message to JSON", cce);
-                    } catch(ClassNotFoundException cnfe) {
+                    } catch (ClassNotFoundException cnfe) {
                         logger.writeLog("cannot parse incoming data to string datatype", cnfe);
                     }
                 }
-            } catch(IOException ioe) {
+            } catch (IOException ioe) {
                 deleteConnection(key, connectionIterator);
                 logger.writeLog("cannot read from inputstream", ioe);
-            } catch(SQLException sqle) {
+            } catch (SQLException sqle) {
                 logger.writeLog("databse access error or closed result set", sqle);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 logger.writeLog("unexpected exception" + System.lineSeparator(), e);
             }
         }
         connectionLock.unlock();
     }
 
-
     /**
      * Closes and deletes the connection which is identified by the key.
      * 
      * @param key
-     *        - hashed mail of the user
+     *            - hashed mail of the user
      * @param iterator
-     *        - iterator over the connection list
+     *            - iterator over the connection list
      * @throws IOException
-     *         - if an I/O error occurs
+     *             - if an I/O error occurs
      */
     private void deleteConnection(String key, Iterator<String> iterator) {
         try {
             connections.get(key).close();
             iterator.remove();
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             logger.writeLog("cannot delete connection", ioe);
         }
     }

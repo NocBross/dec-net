@@ -14,7 +14,7 @@ import main.java.validator.Validator;
  *
  */
 
-public class LoginMessage extends LTMessage {
+public class LoginMessage extends Message {
 
 	public static final String ID = "login";
 	private static final String NICKNAME = "nickname";

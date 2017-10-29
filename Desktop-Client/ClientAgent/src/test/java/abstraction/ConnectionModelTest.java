@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import main.java.client_agent.abstraction.ConnectionModel;
 import main.java.connection.TCPConnection;
-import main.java.constants.EndPoint;
 import main.java.constants.Network;
 import test.java.TestData;
 
@@ -17,20 +16,20 @@ public class ConnectionModelTest {
     @Test
     public void test() {
         try {
-            ConnectionModel model = new ConnectionModel(InetAddress.getByName(TestData.SERVER_ADDRESS));
+            ConnectionModel model = new ConnectionModel();
             ConnectionModelTestSever server = new ConnectionModelTestSever();
             server.start();
             Thread.sleep(50);
 
             // test server connection methods
             model.setServerAddress(InetAddress.getByName(TestData.SERVER_ADDRESS));
-            Assert.assertTrue(model.addServerConnection(EndPoint.LOGIN_END_POINT));
+            Assert.assertTrue(model.addHubConnection(Network.NETWORK_HUB));
             Assert.assertNotNull(model.getServerConnection());
-            Assert.assertEquals(Network.LOGIN_SERVICE_PORT, model.getServerConnection().getRemotePort());
-            Assert.assertFalse(model.addServerConnection(EndPoint.REGISTER_END_POINT));
+            Assert.assertEquals(Network.NETWORK_HUB_PORT, model.getServerConnection().getRemotePort());
+            Assert.assertFalse(model.addHubConnection(Network.NETWORK_HUB));
             Assert.assertTrue(model.deleteServerConnection());
             Assert.assertNull(model.getServerConnection());
-            Assert.assertFalse(model.addServerConnection(EndPoint.LOGIN_END_POINT));
+            Assert.assertFalse(model.addHubConnection(Network.NETWORK_HUB));
             Assert.assertNull(model.getServerConnection());
             Assert.assertFalse(model.deleteServerConnection());
 
@@ -55,7 +54,7 @@ class ConnectionModelTestSever extends Thread {
     @Override
     public void run() {
         try {
-            ServerSocket socket = new ServerSocket(Network.LOGIN_SERVICE_PORT);
+            ServerSocket socket = new ServerSocket(Network.NETWORK_HUB_PORT);
             TCPConnection connection = new TCPConnection(socket.accept());
 
             connection.close();

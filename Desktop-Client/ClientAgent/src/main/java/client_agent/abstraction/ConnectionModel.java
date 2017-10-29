@@ -4,15 +4,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import main.java.connection.TCPConnection;
-import main.java.constants.EndPoint;
 import main.java.constants.Network;
 
 public class ConnectionModel {
@@ -21,20 +18,15 @@ public class ConnectionModel {
     private InetAddress serverAddress;
     private Lock httpConnectionLock;
     private Lock serverConnectionLock;
-    private Map<String, Integer> portMap;
     private TCPConnection serverConnection;
     private List<HttpURLConnection> httpConnections;
     // end of attributes
 
     // constructor
-    public ConnectionModel(InetAddress serverAddress) {
-        this.serverAddress = serverAddress;
+    public ConnectionModel() {
+        this.serverAddress = null;
         httpConnectionLock = new ReentrantLock();
         serverConnectionLock = new ReentrantLock();
-
-        portMap = new HashMap<String, Integer>();
-        portMap.put(EndPoint.LOGIN_END_POINT, Network.LOGIN_SERVICE_PORT);
-        portMap.put(EndPoint.REGISTER_END_POINT, Network.REGISTER_SERVICE_PORT);
 
         serverConnection = null;
         httpConnections = new LinkedList<HttpURLConnection>();
@@ -65,13 +57,13 @@ public class ConnectionModel {
      * @return true in case of success<br>
      *         false otherwise
      */
-    public boolean addServerConnection(String destination) {
+    public boolean addHubConnection(String destination) {
         boolean result = false;
         lockServerConnection();
 
         try {
-            if (serverConnection == null) {
-                serverConnection = new TCPConnection(serverAddress, portMap.get(destination).intValue());
+            if (serverConnection == null && serverAddress != null) {
+                serverConnection = new TCPConnection(serverAddress, Network.NETWORK_HUB_PORT);
                 result = true;
             }
         } catch (Exception e) {
@@ -82,10 +74,9 @@ public class ConnectionModel {
     }
 
     /**
-     * Deletes a specific server connection.
+     * Deletes a specific server connection.<br>
+     * Tries to get the server connection lock before connection will close.
      * 
-     * @param key
-     *            - connection name
      * @return true in case of success<br>
      *         false otherwise
      */

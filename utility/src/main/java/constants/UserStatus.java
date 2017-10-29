@@ -1,5 +1,5 @@
 package main.java.constants;
 
-public enum Status {
+public enum UserStatus {
 	OFFLINE, ONLINE, BUSY
 }

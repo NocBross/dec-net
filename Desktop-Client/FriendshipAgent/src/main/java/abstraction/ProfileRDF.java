@@ -16,12 +16,11 @@ public class ProfileRDF {
 
     private static ProfileRDF rdfModel = null;
 
+    public final String resourcePrefix = "http://www.myRDF.de/";
     private Model profileModel;
     private Property hasDirect;
     private Property hasFriend;
     private Property hasMember;
-    private final String resourcePrefix = "http://www.myRDF.de/";
-
 
     private ProfileRDF() {
         profileModel = ModelFactory.createDefaultModel();
@@ -30,15 +29,13 @@ public class ProfileRDF {
         hasMember = profileModel.createProperty(resourcePrefix + "hasMember");
     }
 
-
     public static ProfileRDF getInstance() {
-        if(rdfModel == null) {
+        if (rdfModel == null) {
             rdfModel = new ProfileRDF();
         }
 
         return rdfModel;
     }
-
 
     public void addFriendToFriendshipGroup(String nickname, String friendshipGroup) {
         Resource friendshipGroupRes = profileModel.createResource(resourcePrefix + friendshipGroup);
@@ -46,33 +43,29 @@ public class ProfileRDF {
         friendshipGroupRes.addProperty(hasMember, friend);
     }
 
-
     public void addModel(ByteArrayInputStream stringReader) {
         profileModel.read(stringReader, null);
     }
-
 
     public void addNewDirectMessage(String userID, String nickname) {
         Resource user = profileModel.createResource(resourcePrefix + userID);
         Resource newDirectMessage = profileModel.createResource(resourcePrefix + nickname);
         user.addProperty(hasDirect, newDirectMessage);
 
-        if(profileModel.contains(user, hasFriend, newDirectMessage)) {
+        if (profileModel.contains(user, hasFriend, newDirectMessage)) {
             profileModel.remove(user, hasFriend, newDirectMessage);
         }
     }
-
 
     public void addNewFriend(String userID, String nickname) {
         Resource user = profileModel.createResource(resourcePrefix + userID);
         Resource newFriend = profileModel.createResource(resourcePrefix + nickname);
         user.addProperty(hasFriend, newFriend);
 
-        if(profileModel.contains(user, hasDirect, newFriend)) {
+        if (profileModel.contains(user, hasDirect, newFriend)) {
             profileModel.remove(user, hasDirect, newFriend);
         }
     }
-
 
     public ResultSet getDirectMessages() {
         try {
@@ -82,12 +75,11 @@ public class ProfileRDF {
             QueryExecution qexec = QueryExecutionFactory.create(queryDirectMessages, profileModel);
 
             return qexec.execSelect();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
-
 
     public ResultSet getFriends() {
         try {
@@ -97,12 +89,11 @@ public class ProfileRDF {
             QueryExecution qexec = QueryExecutionFactory.create(queryFriend, profileModel);
 
             return qexec.execSelect();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
-
 
     public ResultSet getFriendshipGroupsWithMembers() {
         try {
@@ -112,12 +103,11 @@ public class ProfileRDF {
             QueryExecution qexec = QueryExecutionFactory.create(queryFriendshipGroups, profileModel);
 
             return qexec.execSelect();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
-
 
     public void deleteDirectMessage(String userID, String nickname) {
         Resource user = profileModel.createResource(resourcePrefix + userID);
@@ -125,13 +115,11 @@ public class ProfileRDF {
         profileModel.remove(user, hasDirect, newDirectMessage);
     }
 
-
     public void deleteFriend(String userID, String nickname) {
         Resource user = profileModel.createResource(resourcePrefix + userID);
         Resource friend = profileModel.createResource(resourcePrefix + nickname);
         profileModel.remove(user, hasFriend, friend);
     }
-
 
     public Model getModel() {
         return profileModel;

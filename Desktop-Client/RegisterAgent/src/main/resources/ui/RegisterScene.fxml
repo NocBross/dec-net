@@ -17,55 +17,66 @@
 <GridPane fx:controller="main.java.controller.RegisterSceneController"
 	xmlns:fx="http://javafx.com/fxml" alignment="CENTER" hgap="10" vgap="10">
 
-	<Text Text="Registrierung" id="login_register"
-		GridPane.columnIndex="1" GridPane.rowIndex="0" />
+	<Text fx:id="registerHeader" GridPane.columnIndex="1"
+		GridPane.rowIndex="0" />
 
-	<Label Text="Benutzername" GridPane.columnIndex="0"
+	<Label fx:id="registerNicknameLabel" GridPane.columnIndex="0"
 		GridPane.rowIndex="2" />
 
 	<TextField fx:id="nicknameField" GridPane.columnIndex="1"
 		GridPane.rowIndex="2" />
 
-	<Label Text="Passwort:" GridPane.columnIndex="0"
+	<Label fx:id="resourceHubAddressLabel" GridPane.columnIndex="0"
+		GridPane.rowIndex="3" />
+
+	<TextField fx:id="resourceHubAddressField"
+		GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+	<Label fx:id="userIDLabel" GridPane.columnIndex="0"
 		GridPane.rowIndex="4" />
 
-	<PasswordField fx:id="passwordField"
+	<TextField fx:id="userIDField" editable="false"
 		GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
-	<Label Text="Passwort wiederholen:" GridPane.columnIndex="0"
+	<Label fx:id="passwordLabel" GridPane.columnIndex="0"
 		GridPane.rowIndex="5" />
 
-	<PasswordField fx:id="passwordRepeatField"
-		GridPane.columnIndex="1" GridPane.rowIndex="5" onKeyReleased="#passwordMatchingCheck" />
+	<PasswordField fx:id="passwordField"
+		GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
-	<Text fx:id="registerInfoText" GridPane.columnIndex="1"
+	<Label fx:id="repeatPasswordLabel" GridPane.columnIndex="0"
 		GridPane.rowIndex="6" />
 
-	<Separator GridPane.columnIndex="0" GridPane.rowIndex="8"
+	<PasswordField fx:id="passwordRepeatField"
+		GridPane.columnIndex="1" GridPane.rowIndex="6" onKeyReleased="#passwordMatchingCheck" />
+
+	<Text fx:id="registerInfoText" GridPane.columnIndex="1"
+		GridPane.rowIndex="7" />
+
+	<Separator GridPane.columnIndex="0" GridPane.rowIndex="9"
 		GridPane.columnSpan="2" />
 
-	<Text Text="Hinweis:" id="login_register" GridPane.columnIndex="0"
-		GridPane.rowIndex="10" GridPane.columnSpan="2" />
+	<Text fx:id="tipHeaderText" GridPane.columnIndex="0"
+		GridPane.rowIndex="11" GridPane.columnSpan="2" />
 
-	<Text
-		Text="Das Passwort muss mindestens 10 Zeichen lang sein und mindestens
-		einen Kleinbuchstaben, einen Großbuchstaben, eine Zahl und ein Sonderzeichen
-		enthalten."
-		id="hint" GridPane.columnIndex="0" GridPane.rowIndex="11"
-		GridPane.columnSpan="2" wrappingWidth="450" />
+	<Text fx:id="userIDTipText" GridPane.columnIndex="0"
+		GridPane.rowIndex="12" GridPane.columnSpan="2" wrappingWidth="450" />
 
-	<Text fx:id="specialCharacters" id="hint" GridPane.columnIndex="0"
+	<Text fx:id="passwordTipText" GridPane.columnIndex="0"
 		GridPane.rowIndex="13" GridPane.columnSpan="2" wrappingWidth="450" />
 
-	<Separator GridPane.columnIndex="0" GridPane.rowIndex="15"
+	<Text fx:id="specialCharacters" GridPane.columnIndex="0"
+		GridPane.rowIndex="15" GridPane.columnSpan="2" wrappingWidth="450" />
+
+	<Separator GridPane.columnIndex="0" GridPane.rowIndex="17"
 		GridPane.columnSpan="2" />
 
 	<HBox spacing="10" alignment="bottom_right" GridPane.columnIndex="1"
-		GridPane.rowIndex="17">
+		GridPane.rowIndex="19">
 
-		<Button fx:id="registerButton" Text="Registrieren" onAction="#registerButtonAction" />
+		<Button fx:id="registerButton" onAction="#registerButtonAction" />
 
-		<Button fx:id="cancelButton" Text="Abbrechen" onAction="#cancelButtonAction" />
+		<Button fx:id="cancelButton" onAction="#cancelButtonAction" />
 
 	</HBox>
 

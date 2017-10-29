@@ -3,7 +3,7 @@ package test.java.message;
 import org.junit.Assert;
 import org.junit.Test;
 
-import main.java.constants.Status;
+import main.java.constants.UserStatus;
 import main.java.message.RegisterMessage;
 import main.java.message.StatusMessage;
 
@@ -14,9 +14,9 @@ public class StatusMessageTest {
         String testNickname1 = "myID1";
         String testNickname2 = "myID2";
         String testNickname3 = "myID3";
-        Status testStatus1 = Status.OFFLINE;
-        Status testStatus2 = Status.ONLINE;
-        Status testStatus3 = Status.BUSY;
+        UserStatus testStatus1 = UserStatus.OFFLINE;
+        UserStatus testStatus2 = UserStatus.ONLINE;
+        UserStatus testStatus3 = UserStatus.BUSY;
         StatusMessage message = new StatusMessage();
 
         // test initial values

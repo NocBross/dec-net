@@ -3,7 +3,7 @@ package main.java.message;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-public class RDFMessage extends LTMessage {
+public class RDFMessage extends Message {
 
     public static final String ID = "rdf";
     private static final String RESOURCE_ID = "resourceID";

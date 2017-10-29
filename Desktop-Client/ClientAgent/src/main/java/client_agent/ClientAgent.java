@@ -1,7 +1,6 @@
 package main.java.client_agent;
 
 import java.io.ByteArrayOutputStream;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -26,6 +25,7 @@ import main.java.client_agent.controller.TransmitController;
 import main.java.constants.AgentID;
 import main.java.constants.Network;
 import main.java.message.LoginMessage;
+import main.java.message.LogoutMessage;
 import main.java.message.RDFMessage;
 import main.java.message.ReportMessage;
 import main.java.webserver.ClientWebServer;
@@ -55,7 +55,6 @@ public class ClientAgent extends CustomAgent {
 
     private ClientWebServer webserver;
 
-
     public ClientAgent(Stage primaryStage) throws Exception {
         super(null, AgentID.CLIENT_AGENT);
         this.primaryStage = primaryStage;
@@ -71,7 +70,7 @@ public class ClientAgent extends CustomAgent {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 messageLock.lock();
-                if(newValue != null) {
+                if (newValue != null) {
                     receiveMessage(newValue);
                 }
                 messageLock.unlock();
@@ -84,17 +83,31 @@ public class ClientAgent extends CustomAgent {
         startController();
     }
 
-
     public void close() {
+        try {
+            primaryStage.hide();
+
+            LogoutMessage message = new LogoutMessage();
+            message.setSender(userModel.getNickname());
+            transmitController.addMessage(Network.NETWORK_HUB, message.getMessage());
+            scatterAllMessage(message.getMessage());
+            webserver.stop();
+            transmitController.stopController();
+            receiveController.stopController();
+
+            transmitController.join();
+            receiveController.join();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         System.exit(0);
     }
-
 
     @Override
     public Parent getScene() {
         return activeAgent.getScene();
     }
-
 
     @Override
     public void receiveMessage(String message) {
@@ -104,21 +117,18 @@ public class ClientAgent extends CustomAgent {
         newMessage.set(null);
     }
 
-
     @Override
     public void scatterMessage(String message) {
-        for(int i = 0; i < children.size(); i++ ) {
+        for (int i = 0; i < children.size(); i++) {
             children.get(i).receiveMessage(message);
         }
     }
 
-
     @Override
     public void sendMessage(String destination, String message) {
-        transmitController.addMessage(destination, message);
         handleLoginMessage(message);
+        transmitController.addMessage(destination, message);
     }
-
 
     @Override
     public void switchAgent(AgentID destinationAgent) {
@@ -126,8 +136,8 @@ public class ClientAgent extends CustomAgent {
 
             @Override
             public void run() {
-                for(int i = 0; i < children.size(); i++ ) {
-                    if(children.get(i).getID() == destinationAgent) {
+                for (int i = 0; i < children.size(); i++) {
+                    if (children.get(i).getID() == destinationAgent) {
                         primaryStage.getScene().setRoot(children.get(i).getScene());
                         activeAgent = children.get(i);
                         break;
@@ -138,19 +148,17 @@ public class ClientAgent extends CustomAgent {
         });
     }
 
-
     /**
      * Changes the message in the string property.
      * 
      * @param newMessage
-     *        - new received message
+     *            - new received message
      */
     public void updateMessage(String newMessage) {
         messageLock.lock();
         this.newMessage.setValue(newMessage);
         messageLock.unlock();
     }
-
 
     @Override
     public void storeRDFModel(String resourcePath, Model rdfModel) {
@@ -160,11 +168,10 @@ public class ClientAgent extends CustomAgent {
             RDFMessage rdfMessage = new RDFMessage(userModel.getNickname(), stringWriter.toString());
             String url = Network.LOCALHOST_URL + resourcePath;
             transmitController.addMessage(url, rdfMessage.getMessage());
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
     /**
      * Creates instances of all necessary controllers for the client agent.
@@ -177,60 +184,49 @@ public class ClientAgent extends CustomAgent {
         webserver = new ClientWebServer(Network.CLIENT_WEBSERVER_PORT);
     }
 
-
     /**
      * Creates instances of all necessary models for the client agent.
      * 
      * @throws UnknownHostException
      */
     private void createModels() throws Exception {
-        connectionModel = new ConnectionModel(InetAddress.getByName("localhost"));
+        connectionModel = new ConnectionModel();
         userModel = new UserModel();
         transmitModel = new TransmitModel();
     }
 
-
     /**
-     * Stored the mail address and password from an outgoing login message in
-     * the local model.
+     * Stored the mail address and password from an outgoing login message in the
+     * local model.
      * 
      * @param message
-     *        - login message
+     *            - login message
      */
     private void handleLoginMessage(String message) {
         LoginMessage loginMessage = LoginMessage.parse(message);
-        if(loginMessage != null) {
+        if (loginMessage != null) {
             userModel.setNickname(loginMessage.getNickname());
             userModel.setPassword(loginMessage.getPassword());
 
-            String url = "http://localhost:" + Network.CLIENT_WEBSERVER_PORT + "/" + loginMessage.getNickname()
-                    + "/profile";
+            String url = Network.LOCALHOST_URL + "/" + loginMessage.getNickname() + "/profile";
             transmitController.addMessage(url, null);
         }
     }
-
 
     /**
      * Handles an incoming report message.
      * 
      * @param message
-     *        - report message
+     *            - report message
      */
     private void handleReportMessage(String message) {
         ReportMessage reportMessage = ReportMessage.parse(message);
-        if(reportMessage != null) {
-            if(reportMessage.getReferencedMessage().equals(LoginMessage.ID) && reportMessage.getResult()) {} else {
-                receiveController.stopController();
-
-                connectionModel.lockServerConnection();
+        if (reportMessage != null) {
+            if (reportMessage.getReferencedMessage().equals(LoginMessage.ID) && !reportMessage.getResult()) {
                 connectionModel.deleteServerConnection();
-                receiveController = new ReceiveController(connectionModel, this);
-                receiveController.start();
-                connectionModel.unlockServerConnection();
             }
         }
     }
-
 
     /**
      * Starts all necessary controllers.

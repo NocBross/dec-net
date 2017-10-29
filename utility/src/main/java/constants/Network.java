@@ -18,27 +18,22 @@ public class Network {
     public static final int CLIENT_WEBSERVER_PORT = 25000;
 
     /**
-     * Port on which the login service is listen.
+     * Port on which the WebService of the server is listen.
      */
-    public static final int LOGIN_SERVICE_PORT = 25712;
+    public static final int SERVER_WEBSERVICE_PORT = 25700;
 
     /**
-     * Port on which the register service is listen.
+     * ResourceHub address of the LoginService and the ShippingService.
      */
-    public static final int REGISTER_SERVICE_PORT = 25713;
+    public static final String NETWORK_HUB = "hub_service";
 
     /**
-     * Port on which the WebService is listen.
+     * Port on which the LoginService and the ShippingService ost listen.
      */
-    public static final int WEBSERVICE_PORT = 25700;
+    public static final int NETWORK_HUB_PORT = 25800;
 
     /**
      * URL of the localhost.
      */
     public static final String LOCALHOST_URL = NETWORK_PROTOCOL + LOCALHOST_ADDRESS + ":" + CLIENT_WEBSERVER_PORT;
-
-    /**
-     * URL of the ResourceHub.
-     */
-    public static final String RESOURCE_HUB_URL = NETWORK_PROTOCOL + LOCALHOST_ADDRESS + ":" + WEBSERVICE_PORT;
 }

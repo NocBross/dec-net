@@ -17,9 +17,8 @@ public class RegisterMessageTest {
 
         // test mail
         String mail = "my_nickname";
-        Assert.assertTrue(message.setNickname(mail));
-        Assert.assertFalse(message.setNickname(mail));
-        Assert.assertEquals(mail, message.getNickname());
+        message.setUserID(mail);
+        Assert.assertEquals(mail, message.getUserID());
 
         // test password
         Assert.assertFalse(message.setPassword("1"));
@@ -49,7 +48,7 @@ public class RegisterMessageTest {
         RegisterMessage testMessage = RegisterMessage.parse(message.getMessage());
         Assert.assertNotNull(testMessage);
         Assert.assertEquals("register", testMessage.getType());
-        Assert.assertEquals(mail, testMessage.getNickname());
+        Assert.assertEquals(mail, testMessage.getUserID());
         Assert.assertEquals(password, testMessage.getPassword());
         Assert.assertEquals(message.getMessage(), testMessage.getMessage());
     }

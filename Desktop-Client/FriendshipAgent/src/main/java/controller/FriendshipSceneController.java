@@ -15,16 +15,15 @@ import main.java.abstraction.SearchType;
 import main.java.abstraction.UserProfile;
 import main.java.agent.CustomAgent;
 import main.java.agent.RootController;
-import main.java.message.LoginMessage;
 import main.java.message.RDFMessage;
 import main.java.message.SearchMessage;
+import main.java.message.UserIDMessage;
 
 public class FriendshipSceneController extends FriendshipSceneComponents implements RootController {
 
     private FriendshipAgent agent;
     private ProfileRDF rdfModel;
     private UserProfile profile;
-
 
     @FXML
     public void initialize() {
@@ -38,31 +37,28 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         friendPane.setExpanded(false);
         groupPane.setVisible(false);
 
-        scrollPane.setVvalue( -0.05);
+        scrollPane.setVvalue(-0.05);
     }
-
 
     @Override
     public void receiveResult(String message) {
-        handleLoginMessage(message);
+        handleUserIDMessage(message);
         handleRDFMessage(message);
         handleSearchMessage(message);
     }
 
-
     @Override
     public void setAgent(CustomAgent newAgent) {
-        if(newAgent instanceof FriendshipAgent) {
+        if (newAgent instanceof FriendshipAgent) {
             agent = (FriendshipAgent) newAgent;
         }
     }
-
 
     /**
      * Opens the search dialog with direct message parameters.
      * 
      * @param event
-     *        - button clicked
+     *            - button clicked
      */
     @FXML
     protected void newDirectMessageButtonAction(ActionEvent event) {
@@ -70,12 +66,11 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         agent.showSearchDialog("neue Direktnachricht hinzufügen");
     }
 
-
     /**
      * Opens the search dialog with friend parameters.
      * 
      * @param event
-     *        - button clicked
+     *            - button clicked
      */
     @FXML
     protected void newFriendButtonAction(ActionEvent event) {
@@ -83,18 +78,15 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         agent.showSearchDialog("neuen Freund hinzufügen");
     }
 
-
     @FXML
     protected void onAddNewFriendshipGroup(ActionEvent event) {
         agent.showNewFriendshipGroupDialog(friendList.getSelectionModel().getSelectedItem());
     }
 
-
     @FXML
     protected void onAddToFriendshipGroup(ActionEvent event) {
         agent.showAddToFriendshipGroupDialog(friendList.getSelectionModel().getSelectedItem());
     }
-
 
     @FXML
     protected void onDeleteDirect(ActionEvent event) {
@@ -104,7 +96,6 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         agent.storeRDFModel();
     }
 
-
     @FXML
     protected void onDeleteFriend(ActionEvent event) {
         String nickname = friendList.getSelectionModel().getSelectedItem();
@@ -112,7 +103,6 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         rdfModel.deleteFriend(profile.getUserID(), nickname);
         agent.storeRDFModel();
     }
-
 
     @FXML
     protected void onMoveToDirect(ActionEvent event) {
@@ -122,7 +112,6 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         agent.storeRDFModel();
     }
 
-
     @FXML
     protected void onMoveToFriend(ActionEvent event) {
         String nickname = directMessageList.getSelectionModel().getSelectedItem();
@@ -131,71 +120,67 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         agent.storeRDFModel();
     }
 
-
     @FXML
     protected void openDirectMessageListContext(MouseEvent event) {
-        if(event.isPopupTrigger()) {
+        if (event.isPopupTrigger()) {
             directMessagePane.getContextMenu().show(directMessagePane, event.getX(), event.getY());
         }
     }
 
-
     @FXML
     protected void openFriendListContext(MouseEvent event) {
-        if(event.isPopupTrigger()) {
+        if (event.isPopupTrigger()) {
             friendPane.getContextMenu().show(friendPane, event.getX(), event.getY());
         }
     }
 
-
-    private void handleLoginMessage(String message) {
-        LoginMessage loginMessage = LoginMessage.parse(message);
-        if(loginMessage != null) {
-            profile.setUserID(loginMessage.getNickname());
+    private void handleUserIDMessage(String message) {
+        UserIDMessage userIDMessage = UserIDMessage.parse(message);
+        if (userIDMessage != null) {
+            profile.setUserID(userIDMessage.getUserID());
         }
     }
 
-
     private void handleRDFMessage(String message) {
         RDFMessage rdfMessage = RDFMessage.parse(message);
-        if(rdfMessage != null) {
+        if (rdfMessage != null) {
             ResultSet result = null;
             ByteArrayInputStream stringReader = new ByteArrayInputStream(rdfMessage.getModel().getBytes());
             rdfModel.addModel(stringReader);
 
             result = rdfModel.getDirectMessages();
-            if(result != null) {
-                while(result.hasNext()) {
+            if (result != null) {
+                while (result.hasNext()) {
                     QuerySolution solution = result.next();
-                    profile.addDirectMessage(solution.getResource("nickname").getLocalName());
+                    profile.addDirectMessage(
+                            solution.getResource("nickname").toString().replace(rdfModel.resourcePrefix, ""));
                 }
             }
 
             result = rdfModel.getFriends();
-            if(result != null) {
-                while(result.hasNext()) {
+            if (result != null) {
+                while (result.hasNext()) {
                     QuerySolution solution = result.next();
-                    profile.addFriend(solution.getResource("nickname").getLocalName());
+                    profile.addFriend(solution.getResource("nickname").toString().replace(rdfModel.resourcePrefix, ""));
                 }
             }
 
             result = rdfModel.getFriendshipGroupsWithMembers();
-            if(result != null) {
-                while(result.hasNext()) {
+            if (result != null) {
+                while (result.hasNext()) {
                     QuerySolution solution = result.next();
-                    profile.addFriendToFriendshipGroup(solution.getResource("nickname").getLocalName(), solution
-                            .getResource("friendshipGroup").getLocalName());
+                    profile.addFriendToFriendshipGroup(solution.getResource("nickname").getLocalName(),
+                            solution.getResource("friendshipGroup").toString().replace(rdfModel.resourcePrefix, ""));
                 }
             }
         }
     }
 
-
     private void handleSearchMessage(String message) {
         SearchMessage resultMessage = SearchMessage.parse(message);
-        if(resultMessage != null) {
+        if (resultMessage != null) {
             String header = "";
-            switch(profile.getSearchType()) {
+            switch (profile.getSearchType()) {
                 case DIRECT_MESSAGE:
                 case FRIEND:
                     header = "Gefundene Personen:";

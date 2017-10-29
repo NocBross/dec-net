@@ -7,7 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-public class SearchMessage extends LTMessage {
+public class SearchMessage extends Message {
 
 	public static final String ID = "search";
 	private static final String REUQUESTED_NICKNAMES = "nicknames";

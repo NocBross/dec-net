@@ -5,11 +5,13 @@ import main.java.util.DatabaseConnector;
 
 public class UserGenerator {
 
+    private String resourceHubAddress;
     private DatabaseConnector database;
     private PasswordGenerator passwordGenerator;
     private UsersFileWriter writer;
 
     public UserGenerator(String databaseUser, String databasePassword) throws Exception {
+        resourceHubAddress = "@localhost";
         database = new DatabaseConnector(databaseUser, databasePassword);
         passwordGenerator = new PasswordGenerator();
         writer = new UsersFileWriter();
@@ -26,7 +28,7 @@ public class UserGenerator {
 
     public void generate(int value) throws Exception {
         for (int i = 0; i < value; i++) {
-            String nickname = "test_user_" + (i + 1);
+            String nickname = "test_user_" + (i + 1) + resourceHubAddress;
             String password = passwordGenerator.generate();
 
             database.insertNewUser(nickname, password);
