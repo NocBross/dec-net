@@ -7,8 +7,8 @@ import javafx.scene.input.KeyEvent;
 import main.java.FriendshipAgent;
 import main.java.abstraction.SearchDialogComponents;
 import main.java.abstraction.UserProfile;
-import main.java.constants.Network;
 import main.java.constants.WebServiceConstants;
+import main.java.constants.WebServiceContext;
 
 public class SearchDialogController extends SearchDialogComponents {
 
@@ -51,10 +51,10 @@ public class SearchDialogController extends SearchDialogComponents {
                 userID = UserProfile.getInstance().getUserID().split("@");
             }
 
-            String url = Network.NETWORK_PROTOCOL + userID[1] + ":" + Network.SERVER_WEBSERVICE_PORT + "/search"
-                    + WebServiceConstants.SEARCH_SEPARATOR + WebServiceConstants.SEARCH_NICKNAME_KEY
-                    + WebServiceConstants.KEY_VALUE_SEPARATOR + nicknameTextField.getText();
-            agent.sendMessage(url, null);
+            String resource = WebServiceContext.SEARCH + WebServiceConstants.CONTEXT_SEPARATOR
+                    + WebServiceConstants.USER_ID_KEY + WebServiceConstants.KEY_VALUE_SEPARATOR
+                    + nicknameTextField.getText();
+            agent.sendMessage(userID[1], resource, null);
         }
         close();
     }

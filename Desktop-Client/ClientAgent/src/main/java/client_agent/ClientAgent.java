@@ -22,8 +22,11 @@ import main.java.client_agent.abstraction.TransmitModel;
 import main.java.client_agent.abstraction.UserModel;
 import main.java.client_agent.controller.ReceiveController;
 import main.java.client_agent.controller.TransmitController;
+import main.java.connection.IPAddressData;
 import main.java.constants.AgentID;
 import main.java.constants.Network;
+import main.java.constants.WebServiceContext;
+import main.java.message.AddressMessage;
 import main.java.message.LoginMessage;
 import main.java.message.LogoutMessage;
 import main.java.message.RDFMessage;
@@ -89,7 +92,7 @@ public class ClientAgent extends CustomAgent {
 
             LogoutMessage message = new LogoutMessage();
             message.setSender(userModel.getNickname());
-            transmitController.addMessage(Network.NETWORK_HUB, message.getMessage());
+            sendMessage(Network.NETWORK_HUB, null, message.getMessage());
             scatterAllMessage(message.getMessage());
             webserver.stop();
             transmitController.stopController();
@@ -112,6 +115,7 @@ public class ClientAgent extends CustomAgent {
     @Override
     public void receiveMessage(String message) {
         handleReportMessage(message);
+        handleAddressMessage(message);
         scatterMessage(message);
 
         newMessage.set(null);
@@ -125,9 +129,32 @@ public class ClientAgent extends CustomAgent {
     }
 
     @Override
-    public void sendMessage(String destination, String message) {
-        handleLoginMessage(message);
-        transmitController.addMessage(destination, message);
+    public void sendMessage(String destination, String resource, String message) {
+        String url = null;
+        String[] splittedURL = destination.split("@");
+
+        if (destination.equals(Network.NETWORK_HUB)) {
+            url = Network.NETWORK_HUB;
+        } else if (splittedURL.length == 1) {
+            url = Network.NETWORK_PROTOCOL + splittedURL[0] + ":" + Network.SERVER_WEBSERVICE_PORT;
+        } else if (splittedURL.length == 2) {
+            IPAddressData data = connectionModel.getIPAddress(destination);
+            if (data != null) {
+                url = Network.NETWORK_PROTOCOL + data.getActiveAddress() + ":" + Network.SERVER_WEBSERVICE_PORT;
+            } else {
+                url = Network.NETWORK_PROTOCOL + splittedURL[1] + ":" + Network.SERVER_WEBSERVICE_PORT + "/"
+                        + splittedURL[0];
+            }
+        }
+
+        if (resource != null) {
+            url += resource;
+        }
+
+        if (url != null) {
+            handleLoginMessage(message);
+            transmitController.addMessage(url, message);
+        }
     }
 
     @Override
@@ -180,7 +207,7 @@ public class ClientAgent extends CustomAgent {
      */
     private void createController() throws Exception {
         receiveController = new ReceiveController(connectionModel, this);
-        transmitController = new TransmitController(connectionModel, transmitModel);
+        transmitController = new TransmitController(this, connectionModel, transmitModel);
         webserver = new ClientWebServer(Network.CLIENT_WEBSERVER_PORT);
     }
 
@@ -225,6 +252,42 @@ public class ClientAgent extends CustomAgent {
             if (reportMessage.getReferencedMessage().equals(LoginMessage.ID) && !reportMessage.getResult()) {
                 connectionModel.deleteServerConnection();
             }
+            if (reportMessage.getReferencedMessage().equals(LoginMessage.ID) && reportMessage.getResult()) {
+                AddressMessage ipMessage = new AddressMessage();
+                ipMessage.setUserID(userModel.getNickname());
+                ipMessage.setLocalAddress(connectionModel.getServerConnection().getLocalAddress());
+                ipMessage.setLocalPort(connectionModel.getServerConnection().getLocalPort());
+
+                sendMessage(userModel.getNickname().split("@")[1], WebServiceContext.CONNECTION,
+                        ipMessage.getMessage());
+            }
+        }
+    }
+
+    private void handleAddressMessage(String message) {
+        AddressMessage ipMessage = AddressMessage.parse(message);
+        if (ipMessage != null) {
+            IPAddressData data = new IPAddressData();
+            data.setExternalAddress(ipMessage.getExternalAddress());
+            data.setExternalPort(ipMessage.getExternalPort());
+            data.setLocalAddress(ipMessage.getLocalAddress());
+            data.setLocalPort(ipMessage.getLocalPort());
+
+            if (!userModel.getNickname().equals(ipMessage.getUserID())) {
+                if (connectionModel.getIPAddress(userModel.getNickname()).getExternalAddress()
+                        .equals(ipMessage.getExternalAddress())) {
+                    data.setActiveAddress(ipMessage.getLocalAddress());
+                    data.setActivePort(ipMessage.getLocalPort());
+                } else {
+                    data.setActiveAddress(ipMessage.getUserID().split("@")[1]);
+                    data.setActivePort(Network.SERVER_WEBSERVICE_PORT);
+                }
+            } else {
+                data.setActiveAddress(Network.LOCALHOST_ADDRESS);
+                data.setActivePort(Network.CLIENT_WEBSERVER_PORT);
+            }
+
+            connectionModel.updateIPAddresses(ipMessage.getUserID(), data);
         }
     }
 

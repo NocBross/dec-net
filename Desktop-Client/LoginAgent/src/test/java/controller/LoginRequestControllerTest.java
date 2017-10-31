@@ -41,7 +41,7 @@ public class LoginRequestControllerTest {
                 return null;
             }
 
-        }).when(agent).sendMessage(Mockito.anyString(), Mockito.anyString());
+        }).when(agent).sendMessage(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
 
         // initialize test
         data.getNicknameProperty().bind(mail);

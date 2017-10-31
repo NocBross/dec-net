@@ -47,7 +47,7 @@ public class RegisterRequestControllerTest {
                 return null;
             }
 
-        }).when(agent).sendMessage(Mockito.anyString(), Mockito.anyString());
+        }).when(agent).sendMessage(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
         Mockito.doAnswer(new Answer<Object>() {
 
             @Override

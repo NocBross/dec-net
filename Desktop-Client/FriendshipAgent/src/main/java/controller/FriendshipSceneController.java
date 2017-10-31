@@ -1,6 +1,8 @@
 package main.java.controller;
 
 import java.io.ByteArrayInputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
@@ -15,7 +17,11 @@ import main.java.abstraction.SearchType;
 import main.java.abstraction.UserProfile;
 import main.java.agent.CustomAgent;
 import main.java.agent.RootController;
+import main.java.constants.WebServiceConstants;
+import main.java.constants.WebServiceContext;
+import main.java.message.LoginMessage;
 import main.java.message.RDFMessage;
+import main.java.message.ReportMessage;
 import main.java.message.SearchMessage;
 import main.java.message.UserIDMessage;
 
@@ -45,6 +51,7 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         handleUserIDMessage(message);
         handleRDFMessage(message);
         handleSearchMessage(message);
+        handleReportMessage(message);
     }
 
     @Override
@@ -191,6 +198,26 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
                     break;
             }
             agent.showResultDialog(header, resultMessage.getNicknames());
+        }
+    }
+
+    private void handleReportMessage(String message) {
+        ReportMessage reportMessage = ReportMessage.parse(message);
+
+        if (reportMessage != null) {
+            if (reportMessage.getReferencedMessage().equals(LoginMessage.ID) && reportMessage.getResult()) {
+                List<String> contactList = new LinkedList<String>();
+                contactList.addAll(profile.getDirectMessages());
+                contactList.addAll(profile.getFriends());
+                contactList.add(profile.getUserID());
+
+                for (int i = 0; i < contactList.size(); i++) {
+                    String resource = WebServiceContext.CONNECTION + WebServiceConstants.CONTEXT_SEPARATOR
+                            + WebServiceConstants.USER_ID_KEY + WebServiceConstants.KEY_VALUE_SEPARATOR
+                            + contactList.get(i);
+                    agent.sendMessage(contactList.get(i).split("@")[1], resource, null);
+                }
+            }
         }
     }
 

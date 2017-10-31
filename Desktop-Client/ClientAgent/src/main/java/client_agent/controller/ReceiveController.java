@@ -1,10 +1,7 @@
 package main.java.client_agent.controller;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.io.EOFException;
 import java.net.SocketTimeoutException;
-import java.util.Iterator;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -42,6 +39,15 @@ public class ReceiveController extends Thread {
     }
 
     /**
+     * Stops the transmit controller.
+     */
+    public void stopController() {
+        runLock.lock();
+        running = false;
+        runLock.unlock();
+    }
+
+    /**
      * Receives message from the server.
      */
     private void receiveFromServer() {
@@ -57,34 +63,15 @@ public class ReceiveController extends Thread {
                 agent.updateMessage(message);
             } catch (SocketTimeoutException ste) {
 
-            } catch (Exception e) {
-            }
-        }
-
-        connectionModel.lockHTTPConnection();
-        Iterator<HttpURLConnection> httpConnectionIterator = connectionModel.getHTTPConnections().iterator();
-        while (httpConnectionIterator.hasNext()) {
-            try {
-                HttpURLConnection httpConnection = httpConnectionIterator.next();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(httpConnection.getInputStream()));
-                for (String line; (line = reader.readLine()) != null;) {
-                    agent.updateMessage(line);
+            } catch (EOFException eofe) {
+                try {
+                    connection.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                reader.close();
-                httpConnectionIterator.remove();
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
         }
-        connectionModel.unlockHTTPConnection();
-    }
-
-    /**
-     * Stops the transmit controller.
-     */
-    public void stopController() {
-        runLock.lock();
-        running = false;
-        runLock.unlock();
     }
 }

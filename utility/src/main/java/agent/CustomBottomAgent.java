@@ -33,8 +33,8 @@ public class CustomBottomAgent extends CustomAgent {
     }
 
     @Override
-    public void sendMessage(String destination, String message) {
-        parent.sendMessage(destination, message);
+    public void sendMessage(String destination, String resource, String message) {
+        parent.sendMessage(destination, resource, message);
     }
 
     @Override

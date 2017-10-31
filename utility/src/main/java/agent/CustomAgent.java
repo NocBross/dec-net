@@ -124,7 +124,7 @@ public abstract class CustomAgent {
      * @param message
      *            - massage which has to send to the end point
      */
-    public abstract void sendMessage(String destination, String message);
+    public abstract void sendMessage(String destination, String resource, String message);
 
     /**
      * Distributes the given message to all children.

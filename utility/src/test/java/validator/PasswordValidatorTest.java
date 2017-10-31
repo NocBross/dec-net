@@ -10,7 +10,7 @@ public class PasswordValidatorTest {
 
     @Test
     public void test() {
-        Validator validator = new PasswordValidator();
+        Validator<String> validator = new PasswordValidator();
 
         Assert.assertFalse(validator.validate("1"));
         Assert.assertFalse(validator.validate("a"));

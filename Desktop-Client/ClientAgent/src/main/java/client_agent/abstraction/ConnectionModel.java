@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import main.java.connection.IPAddressData;
 import main.java.connection.TCPConnection;
 import main.java.constants.Network;
 
@@ -20,6 +23,7 @@ public class ConnectionModel {
     private Lock serverConnectionLock;
     private TCPConnection serverConnection;
     private List<HttpURLConnection> httpConnections;
+    private Map<String, IPAddressData> ipAddresses;
     // end of attributes
 
     // constructor
@@ -30,6 +34,7 @@ public class ConnectionModel {
 
         serverConnection = null;
         httpConnections = new LinkedList<HttpURLConnection>();
+        ipAddresses = new HashMap<String, IPAddressData>();
     }
     // end of constructor
 
@@ -99,6 +104,10 @@ public class ConnectionModel {
         return httpConnections;
     }
 
+    public IPAddressData getIPAddress(String key) {
+        return ipAddresses.get(key);
+    }
+
     /**
      * Returns the TCPConnection to the given service.
      * 
@@ -145,5 +154,9 @@ public class ConnectionModel {
      */
     public void setServerAddress(InetAddress newServerAddress) {
         serverAddress = newServerAddress;
+    }
+
+    public void updateIPAddresses(String key, IPAddressData data) {
+        ipAddresses.put(key, data);
     }
 }

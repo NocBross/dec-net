@@ -5,12 +5,12 @@ public class WebServiceConstants {
     /**
      * Defines the character which is used to split different search requests.
      */
-    public static final String SEARCH_CONTEXT_SEPARATOR = "\\?";
+    public static final String CONTEXT_SEPARATOR_ESCAPED = "\\?";
 
     /**
      * Defines the character which is used to split different search requests.
      */
-    public static final String SEARCH_SEPARATOR = "?";
+    public static final String CONTEXT_SEPARATOR = "?";
 
     /**
      * Defines the character which splits the key and the value.
@@ -20,6 +20,6 @@ public class WebServiceConstants {
     /**
      * Defines the key which is used to looking for a specific nickname.
      */
-    public static final String SEARCH_NICKNAME_KEY = "nickname";
+    public static final String USER_ID_KEY = "nickname";
 
 }

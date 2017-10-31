@@ -28,7 +28,7 @@ public class Network {
     public static final String NETWORK_HUB = "hub_service";
 
     /**
-     * Port on which the LoginService and the ShippingService ost listen.
+     * Port on which the LoginService and the ShippingService is listen.
      */
     public static final int NETWORK_HUB_PORT = 25800;
 

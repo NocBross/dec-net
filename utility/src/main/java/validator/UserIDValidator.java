@@ -1,6 +1,6 @@
 package main.java.validator;
 
-public class UserIDValidator implements Validator {
+public class UserIDValidator implements Validator<String> {
 
     @Override
     public boolean validate(String stringToValidate) {

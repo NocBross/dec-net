@@ -11,8 +11,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import main.java.connection.IPAddressData;
 import main.java.connection.TCPConnection;
 import main.java.constants.LogFiles;
+import main.java.message.AddressMessage;
 import main.java.message.LogoutMessage;
 import main.java.service.CustomService;
 
@@ -20,6 +22,7 @@ public class ShippingService extends CustomService {
 
     private Iterator<String> connectionIterator;
     private Map<String, TCPConnection> connections;
+    private Map<String, IPAddressData> ipAddresses;
     private Lock connectionLock;
 
     public ShippingService() throws IOException {
@@ -27,6 +30,7 @@ public class ShippingService extends CustomService {
 
         connectionIterator = null;
         connections = new HashMap<String, TCPConnection>();
+        ipAddresses = new HashMap<String, IPAddressData>();
         connectionLock = new ReentrantLock();
     }
 
@@ -42,8 +46,38 @@ public class ShippingService extends CustomService {
      */
     public void addConnection(String nickname, TCPConnection newConnection) {
         connectionLock.lock();
+
+        IPAddressData data = new IPAddressData();
+        data.setExternalAddress(newConnection.getInetAddress());
+        data.setExternalPort(newConnection.getRemotePort());
+
         connections.put(nickname, newConnection);
+        ipAddresses.put(nickname, data);
+
         connectionLock.unlock();
+    }
+
+    public IPAddressData getAddressData(String userID) {
+        return ipAddresses.get(userID);
+    }
+
+    public void updateAddressData(AddressMessage message) {
+        String userID = message.getUserID();
+        if (ipAddresses.get(userID) == null) {
+            ipAddresses.put(userID, new IPAddressData());
+        }
+        if (message.getExternalAddress() != null) {
+            ipAddresses.get(userID).setExternalAddress(message.getExternalAddress());
+        }
+        if (message.getExternalPort() != -1) {
+            ipAddresses.get(userID).setExternalPort(message.getExternalPort());
+        }
+        if (message.getLocalAddress() != null) {
+            ipAddresses.get(userID).setLocalAddress(message.getLocalAddress());
+        }
+        if (message.getLocalPort() != -1) {
+            ipAddresses.get(userID).setLocalPort(message.getLocalPort());
+        }
     }
 
     @Override

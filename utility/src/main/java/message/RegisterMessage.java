@@ -19,7 +19,7 @@ public class RegisterMessage extends Message {
     public static final String ID = "register";
     private static final String USER_ID = "userID";
     private static final String PASSWORD = "password";
-    private Validator passwordValidator;
+    private Validator<String> passwordValidator;
 
     public RegisterMessage() {
         super(ID);

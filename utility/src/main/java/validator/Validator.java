@@ -7,14 +7,14 @@ package main.java.validator;
  *
  */
 
-public interface Validator {
+public interface Validator<T> {
 
-	/**
-	 * Checks if the given string has the correct syntax.
-	 * 
-	 * @param stringToValidate
-	 * @return true in case of the string is correct<br>
-	 *         false otherwise
-	 */
-	public boolean validate(String stringToValidate);
+    /**
+     * Checks if the given string has the correct syntax.
+     * 
+     * @param valueToValidate
+     * @return true in case of the string is correct<br>
+     *         false otherwise
+     */
+    public boolean validate(T valueToValidate);
 }

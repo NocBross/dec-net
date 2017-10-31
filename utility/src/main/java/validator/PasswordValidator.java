@@ -15,7 +15,7 @@ import main.java.constants.Security;
  *
  */
 
-public class PasswordValidator implements Validator {
+public class PasswordValidator implements Validator<String> {
 
     private final String PASSWORD_PATTERN;
     private final Pattern validatorPattern;

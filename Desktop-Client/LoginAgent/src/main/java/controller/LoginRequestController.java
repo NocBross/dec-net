@@ -66,7 +66,7 @@ public class LoginRequestController implements RequestController {
         message.setNickname(data.getNickname());
         userIDMessage.setUserID(data.getNickname());
         message.setPassword(data.getPassword());
-        agent.sendMessage(Network.NETWORK_HUB, message.getMessage());
+        agent.sendMessage(Network.NETWORK_HUB, null, message.getMessage());
         agent.scatterAllMessage(userIDMessage.getMessage());
 
         return 0;

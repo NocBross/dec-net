@@ -25,14 +25,14 @@ public class SearchHandler implements HttpHandler {
 			int status = 400;
 			String response = "";
 			String request = httpExchange.getRequestURI().toString();
-			String[] searchRequests = request.split(WebServiceConstants.SEARCH_CONTEXT_SEPARATOR);
+			String[] searchRequests = request.split(WebServiceConstants.CONTEXT_SEPARATOR_ESCAPED);
 
 			httpExchange.getResponseHeaders().add("Content-type", "text/html");
 			for (int i = 1; i < searchRequests.length; i++) {
 				String[] searchRequest = searchRequests[i].split(WebServiceConstants.KEY_VALUE_SEPARATOR);
 
 				switch (searchRequest[0]) {
-				case WebServiceConstants.SEARCH_NICKNAME_KEY:
+				case WebServiceConstants.USER_ID_KEY:
 					ResultSet result = database.lookingForNickname(searchRequest[1]);
 					SearchMessage resultMessage = new SearchMessage();
 					while (result.next()) {

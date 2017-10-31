@@ -25,7 +25,6 @@ public class TCPConnectionTest {
             Assert.assertEquals("test", connection.getData());
             Assert.assertEquals("127.0.0.1", connection.getInetAddress());
             Assert.assertTrue(connection.getRemotePort() >= 0 && connection.getRemotePort() <= 65535);
-            Assert.assertTrue(connection.isConnected());
 
             server.join();
             Assert.assertFalse(connection.isConnected());
@@ -54,7 +53,6 @@ class TestServer extends Thread {
 
             Thread.sleep(1000);
             connection.sendData("test");
-            Assert.assertEquals("1", connection.getData());
             Assert.assertEquals("127.0.0.1", connection.getLocalAddress());
             Assert.assertTrue(connection.getRemotePort() >= 0 && connection.getLocalPort() <= 65535);
 

@@ -1,15 +1,12 @@
 package main.java.client_agent.controller;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import main.java.client_agent.ClientAgent;
 import main.java.client_agent.abstraction.ConnectionModel;
 import main.java.client_agent.abstraction.TransmitData;
 import main.java.client_agent.abstraction.TransmitModel;
@@ -20,15 +17,17 @@ import main.java.message.LoginMessage;
 public class TransmitController extends Thread {
 
     private boolean isRunning;
+    private ClientAgent agent;
     private Condition notEmpty;
     private ConnectionModel connectionModel;
     private Lock runLock;
     private TransmitModel transmitModel;
 
-    public TransmitController(ConnectionModel connectionModel, TransmitModel transmitModel) {
+    public TransmitController(ClientAgent agent, ConnectionModel connectionModel, TransmitModel transmitModel) {
         isRunning = false;
         runLock = new ReentrantLock();
         notEmpty = runLock.newCondition();
+        this.agent = agent;
         this.connectionModel = connectionModel;
         this.transmitModel = transmitModel;
     }
@@ -110,28 +109,7 @@ public class TransmitController extends Thread {
      *            - message which hash to send
      */
     private void sendRequest(String url, String message) {
-        connectionModel.lockHTTPConnection();
-        try {
-            HttpURLConnection connection = connectionModel.addHTTPConnection(url);
-
-            if (message == null) {
-                connection.setRequestMethod("GET");
-            } else {
-                byte[] binaryMessage = message.getBytes(StandardCharsets.UTF_8);
-                connection.setDoOutput(true);
-                connection.setInstanceFollowRedirects(false);
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                connection.setRequestProperty("charset", "utf-8");
-                connection.setRequestProperty("Content-Length", Integer.toString(binaryMessage.length));
-                connection.setUseCaches(false);
-                DataOutputStream dataWriter = new DataOutputStream(connection.getOutputStream());
-                dataWriter.write(binaryMessage);
-            }
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-        connectionModel.unlockHTTPConnection();
+        (new HttpController(agent, connectionModel, url, message)).start();
     }
 
     /**

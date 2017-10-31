@@ -12,16 +12,16 @@ public class WebServiceConstantsTest {
     public void test() {
         WebServiceConstants testWebServiceConstants = new WebServiceConstants();
 
-        Assert.assertEquals("\\?", WebServiceConstants.SEARCH_CONTEXT_SEPARATOR);
-        Assert.assertEquals("?", WebServiceConstants.SEARCH_SEPARATOR);
+        Assert.assertEquals("\\?", WebServiceConstants.CONTEXT_SEPARATOR_ESCAPED);
+        Assert.assertEquals("?", WebServiceConstants.CONTEXT_SEPARATOR);
         Assert.assertEquals("=", WebServiceConstants.KEY_VALUE_SEPARATOR);
-        Assert.assertEquals("nickname", WebServiceConstants.SEARCH_NICKNAME_KEY);
+        Assert.assertEquals("nickname", WebServiceConstants.USER_ID_KEY);
 
-        Assert.assertEquals(WebServiceConstants.SEARCH_CONTEXT_SEPARATOR,
-                testWebServiceConstants.SEARCH_CONTEXT_SEPARATOR);
-        Assert.assertEquals(WebServiceConstants.SEARCH_SEPARATOR, testWebServiceConstants.SEARCH_SEPARATOR);
+        Assert.assertEquals(WebServiceConstants.CONTEXT_SEPARATOR_ESCAPED,
+                testWebServiceConstants.CONTEXT_SEPARATOR_ESCAPED);
+        Assert.assertEquals(WebServiceConstants.CONTEXT_SEPARATOR, testWebServiceConstants.CONTEXT_SEPARATOR);
         Assert.assertEquals(WebServiceConstants.KEY_VALUE_SEPARATOR, testWebServiceConstants.KEY_VALUE_SEPARATOR);
-        Assert.assertEquals(WebServiceConstants.SEARCH_NICKNAME_KEY, testWebServiceConstants.SEARCH_NICKNAME_KEY);
+        Assert.assertEquals(WebServiceConstants.USER_ID_KEY, testWebServiceConstants.USER_ID_KEY);
     }
 
 }

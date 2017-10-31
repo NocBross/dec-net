@@ -37,6 +37,7 @@ public class CustomMiddleAgentTest {
 
     private void testWithChildren() {
         String destination = "test destination";
+        String resource = "/search?nickname=test";
         String message = "test message";
         CustomAgent parent = Mockito.mock(CustomAgent.class);
         child = Mockito.mock(CustomAgent.class);
@@ -65,19 +66,20 @@ public class CustomMiddleAgentTest {
         }).when(child).receiveMessage(Mockito.anyString());
 
         List<String> destinationListSpy = new LinkedList<String>();
-        List<String> sendMessageListSpy = new LinkedList<String>();
+        List<String> resourceListSpy = new LinkedList<String>();
+        List<String> messageListSpy = new LinkedList<String>();
         Mockito.doAnswer(new Answer<String>() {
 
             @Override
             public String answer(InvocationOnMock invocation) throws Throwable {
                 destinationListSpy.add((String) invocation.getArguments()[0]);
-                sendMessageListSpy.add((String) invocation.getArguments()[1]);
+                resourceListSpy.add((String) invocation.getArguments()[1]);
+                messageListSpy.add((String) invocation.getArguments()[2]);
                 return null;
             }
 
-        }).when(parent).sendMessage(Mockito.anyString(), Mockito.anyString());
+        }).when(parent).sendMessage(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
 
-        List<String> resourceListSpy = new LinkedList<String>();
         List<Model> modelListSpy = new LinkedList<Model>();
         Mockito.doAnswer(new Answer<String>() {
 
@@ -104,15 +106,17 @@ public class CustomMiddleAgentTest {
         Assert.assertEquals(message, receiveMessageListSpy.get(0));
         Assert.assertEquals(message, receiveMessageListSpy.get(1));
 
-        agent.sendMessage(destination, message);
+        agent.sendMessage(destination, resource, message);
         Assert.assertEquals(1, destinationListSpy.size());
         Assert.assertEquals(destination, destinationListSpy.get(0));
-        Assert.assertEquals(1, sendMessageListSpy.size());
-        Assert.assertEquals(message, sendMessageListSpy.get(0));
+        Assert.assertEquals(1, resourceListSpy.size());
+        Assert.assertEquals(resource, resourceListSpy.get(0));
+        Assert.assertEquals(1, messageListSpy.size());
+        Assert.assertEquals(message, messageListSpy.get(0));
 
         agent.storeRDFModel(destination, null);
-        Assert.assertEquals(1, resourceListSpy.size());
-        Assert.assertEquals(destination, resourceListSpy.get(0));
+        Assert.assertEquals(2, resourceListSpy.size());
+        Assert.assertEquals(destination, resourceListSpy.get(1));
         Assert.assertEquals(1, modelListSpy.size());
         Assert.assertNull(modelListSpy.get(0));
 
