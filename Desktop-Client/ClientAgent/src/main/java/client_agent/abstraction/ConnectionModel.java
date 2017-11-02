@@ -1,12 +1,7 @@
 package main.java.client_agent.abstraction;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.InetAddress;
-import java.net.URL;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -22,7 +17,6 @@ public class ConnectionModel {
     private Lock httpConnectionLock;
     private Lock serverConnectionLock;
     private TCPConnection serverConnection;
-    private List<HttpURLConnection> httpConnections;
     private Map<String, IPAddressData> ipAddresses;
     // end of attributes
 
@@ -33,27 +27,11 @@ public class ConnectionModel {
         serverConnectionLock = new ReentrantLock();
 
         serverConnection = null;
-        httpConnections = new LinkedList<HttpURLConnection>();
         ipAddresses = new HashMap<String, IPAddressData>();
     }
     // end of constructor
 
     // methods
-    /**
-     * Adds a new http connection to the model.<br>
-     * The calling method has to get serverConnectionLock first. If the calling
-     * method does not hold the lock there is no guarantee for a correct behavior.
-     * 
-     * @throws IOException
-     */
-    public HttpURLConnection addHTTPConnection(String urlString) throws IOException {
-        URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        httpConnections.add(connection);
-
-        return connection;
-    }
-
     /**
      * Adds a new connection to the model.<br>
      * The calling method has to get serverConnectionLock first. If the calling
@@ -98,10 +76,6 @@ public class ConnectionModel {
 
         unlockServerConnection();
         return result;
-    }
-
-    public List<HttpURLConnection> getHTTPConnections() {
-        return httpConnections;
     }
 
     public IPAddressData getIPAddress(String key) {

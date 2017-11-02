@@ -45,6 +45,7 @@ public class RegisterHandler implements HttpHandler {
         OutputStream os = httpExchange.getResponseBody();
         os.write(rawReport.getBytes());
         os.close();
+        httpExchange.close();
     }
 
     private String readMessage(InputStream in) throws IOException {

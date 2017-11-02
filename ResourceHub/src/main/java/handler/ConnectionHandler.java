@@ -30,6 +30,8 @@ public class ConnectionHandler implements HttpHandler {
         } else if (requestMethod.equals("POST")) {
             handlePOST(httpExchange);
         }
+
+        httpExchange.close();
     }
 
     private void handleGET(HttpExchange httpExchange) throws IOException {

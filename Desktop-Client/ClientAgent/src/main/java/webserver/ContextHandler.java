@@ -27,22 +27,21 @@ public class ContextHandler implements HttpHandler {
 
     private String contextRoot;
 
-
     public ContextHandler(String contextRoot) {
         this.contextRoot = contextRoot;
     }
 
-
     @Override
     public void handle(HttpExchange httpExchange) {
+        OutputStream os = null;
         try {
             int status = 400;
             String response = "";
             String request = httpExchange.getRequestURI().toString();
             File resource = new File(contextRoot + request);
 
-            if(httpExchange.getRequestMethod().equals("GET")) {
-                if(resource.exists()) {
+            if (httpExchange.getRequestMethod().equals("GET")) {
+                if (resource.exists()) {
                     status = 200;
                     response = readRDF(resource);
                 } else {
@@ -57,21 +56,30 @@ public class ContextHandler implements HttpHandler {
 
             httpExchange.getResponseHeaders().add("Content-type", "text/html");
             httpExchange.sendResponseHeaders(status, response.length());
-            OutputStream os = httpExchange.getResponseBody();
+            os = httpExchange.getResponseBody();
             os.write(response.getBytes());
             os.close();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            httpExchange.close();
         }
     }
-
 
     private String readRDF(File resource) throws IOException {
         String model = "";
         String line = "";
         BufferedReader reader = new BufferedReader(new FileReader(resource));
 
-        while((line = reader.readLine()) != null) {
+        while ((line = reader.readLine()) != null) {
             model += line;
         }
 
@@ -79,19 +87,18 @@ public class ContextHandler implements HttpHandler {
         return new RDFMessage(resource.getPath().substring(8), model).getMessage();
     }
 
-
     private void writeRDF(File resource, BufferedReader reader) throws IOException {
         boolean fileWasCreated = false;
         String message = "";
         String line = "";
 
-        if( !resource.exists()) {
+        if (!resource.exists()) {
             resource.getParentFile().mkdirs();
             resource.createNewFile();
             fileWasCreated = true;
         }
 
-        while((line = reader.readLine()) != null) {
+        while ((line = reader.readLine()) != null) {
             message += line;
         }
         RDFMessage rdf = RDFMessage.parse(message);
@@ -100,7 +107,7 @@ public class ContextHandler implements HttpHandler {
         Model updatedModel = ModelFactory.createDefaultModel();
         updatedModel.read(stringReader, null);
 
-        if(resource.exists() && !fileWasCreated) {
+        if (resource.exists() && !fileWasCreated) {
             FileInputStream fileInputStream = new FileInputStream(resource);
             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
 
@@ -110,7 +117,7 @@ public class ContextHandler implements HttpHandler {
 
                 Model result = mergeModels(storedModel, updatedModel);
                 updatedModel = result;
-            } catch(RiotException re) {
+            } catch (RiotException re) {
                 re.printStackTrace();
             }
 
@@ -128,11 +135,10 @@ public class ContextHandler implements HttpHandler {
         bufferedOutputStream.close();
     }
 
-
     private Model mergeModels(Model m1, Model m2) {
         Model deletedStatements = m1.difference(m2);
         StmtIterator iterator = deletedStatements.listStatements();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             Statement node = iterator.nextStatement();
             m1.remove(node);
         }

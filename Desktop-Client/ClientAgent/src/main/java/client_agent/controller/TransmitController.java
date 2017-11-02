@@ -109,7 +109,7 @@ public class TransmitController extends Thread {
      *            - message which hash to send
      */
     private void sendRequest(String url, String message) {
-        (new HttpController(agent, connectionModel, url, message)).start();
+        (new HttpController(agent, url, message)).start();
     }
 
     /**
