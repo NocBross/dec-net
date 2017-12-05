@@ -12,15 +12,6 @@ public class FriendshipSceneComponents {
     protected ScrollPane scrollPane;
 
     @FXML
-    protected TitledPane directMessagePane;
-
-    @FXML
-    protected Button addNewDirectMessageButton;
-
-    @FXML
-    protected ListView<String> directMessageList;
-
-    @FXML
     protected TitledPane friendPane;
 
     @FXML

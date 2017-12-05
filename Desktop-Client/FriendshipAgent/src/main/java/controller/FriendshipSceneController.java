@@ -4,15 +4,11 @@ import java.io.ByteArrayInputStream;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.input.MouseEvent;
 import main.java.FriendshipAgent;
 import main.java.abstraction.FriendshipSceneComponents;
-import main.java.abstraction.ProfileRDF;
 import main.java.abstraction.SearchType;
 import main.java.abstraction.UserProfile;
 import main.java.agent.CustomAgent;
@@ -24,6 +20,7 @@ import main.java.message.RDFMessage;
 import main.java.message.ReportMessage;
 import main.java.message.SearchMessage;
 import main.java.message.UserIDMessage;
+import main.java.rdf.ProfileRDF;
 
 public class FriendshipSceneController extends FriendshipSceneComponents implements RootController {
 
@@ -37,10 +34,8 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         rdfModel = ProfileRDF.getInstance();
         profile = UserProfile.getInstance();
 
-        directMessageList.setItems(profile.getDirectMessages());
-        directMessagePane.setExpanded(true);
         friendList.setItems(profile.getFriends());
-        friendPane.setExpanded(false);
+        friendPane.setExpanded(true);
         groupPane.setVisible(false);
 
         scrollPane.setVvalue(-0.05);
@@ -62,18 +57,6 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
     }
 
     /**
-     * Opens the search dialog with direct message parameters.
-     * 
-     * @param event
-     *            - button clicked
-     */
-    @FXML
-    protected void newDirectMessageButtonAction(ActionEvent event) {
-        profile.setSearchType(SearchType.DIRECT_MESSAGE);
-        agent.showSearchDialog("neue Direktnachricht hinzufügen");
-    }
-
-    /**
      * Opens the search dialog with friend parameters.
      * 
      * @param event
@@ -86,52 +69,11 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
     }
 
     @FXML
-    protected void onAddNewFriendshipGroup(ActionEvent event) {
-        agent.showNewFriendshipGroupDialog(friendList.getSelectionModel().getSelectedItem());
-    }
-
-    @FXML
-    protected void onAddToFriendshipGroup(ActionEvent event) {
-        agent.showAddToFriendshipGroupDialog(friendList.getSelectionModel().getSelectedItem());
-    }
-
-    @FXML
-    protected void onDeleteDirect(ActionEvent event) {
-        String nickname = directMessageList.getSelectionModel().getSelectedItem();
-        profile.deleteDirectMessage(nickname);
-        rdfModel.deleteDirectMessage(profile.getUserID(), nickname);
-        agent.storeRDFModel();
-    }
-
-    @FXML
     protected void onDeleteFriend(ActionEvent event) {
         String nickname = friendList.getSelectionModel().getSelectedItem();
         profile.deleteFriend(nickname);
         rdfModel.deleteFriend(profile.getUserID(), nickname);
         agent.storeRDFModel();
-    }
-
-    @FXML
-    protected void onMoveToDirect(ActionEvent event) {
-        String nickname = friendList.getSelectionModel().getSelectedItem();
-        profile.addDirectMessage(nickname);
-        rdfModel.addNewDirectMessage(profile.getUserID(), nickname);
-        agent.storeRDFModel();
-    }
-
-    @FXML
-    protected void onMoveToFriend(ActionEvent event) {
-        String nickname = directMessageList.getSelectionModel().getSelectedItem();
-        profile.addFriend(nickname);
-        rdfModel.addNewFriend(profile.getUserID(), nickname);
-        agent.storeRDFModel();
-    }
-
-    @FXML
-    protected void openDirectMessageListContext(MouseEvent event) {
-        if (event.isPopupTrigger()) {
-            directMessagePane.getContextMenu().show(directMessagePane, event.getX(), event.getY());
-        }
     }
 
     @FXML
@@ -151,33 +93,14 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
     private void handleRDFMessage(String message) {
         RDFMessage rdfMessage = RDFMessage.parse(message);
         if (rdfMessage != null) {
-            ResultSet result = null;
+            List<String> friends = null;
             ByteArrayInputStream stringReader = new ByteArrayInputStream(rdfMessage.getModel().getBytes());
             rdfModel.addModel(stringReader);
 
-            result = rdfModel.getDirectMessages();
-            if (result != null) {
-                while (result.hasNext()) {
-                    QuerySolution solution = result.next();
-                    profile.addDirectMessage(
-                            solution.getResource("nickname").toString().replace(rdfModel.resourcePrefix, ""));
-                }
-            }
-
-            result = rdfModel.getFriends();
-            if (result != null) {
-                while (result.hasNext()) {
-                    QuerySolution solution = result.next();
-                    profile.addFriend(solution.getResource("nickname").toString().replace(rdfModel.resourcePrefix, ""));
-                }
-            }
-
-            result = rdfModel.getFriendshipGroupsWithMembers();
-            if (result != null) {
-                while (result.hasNext()) {
-                    QuerySolution solution = result.next();
-                    profile.addFriendToFriendshipGroup(solution.getResource("nickname").getLocalName(),
-                            solution.getResource("friendshipGroup").toString().replace(rdfModel.resourcePrefix, ""));
+            friends = rdfModel.getFriends();
+            if (friends != null) {
+                for (int i = 0; i < friends.size(); i++) {
+                    profile.addFriend(friends.get(i));
                 }
             }
         }
@@ -214,7 +137,7 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
                 for (int i = 0; i < contactList.size(); i++) {
                     String resource = WebServiceContext.CONNECTION + WebServiceConstants.CONTEXT_SEPARATOR
                             + WebServiceConstants.USER_ID_KEY + WebServiceConstants.KEY_VALUE_SEPARATOR
-                            + contactList.get(i);
+                            + contactList.get(i).split("@")[0];
                     agent.sendMessage(contactList.get(i).split("@")[1], resource, null);
                 }
             }

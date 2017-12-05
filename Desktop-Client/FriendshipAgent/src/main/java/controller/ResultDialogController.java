@@ -6,9 +6,9 @@ import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import main.java.FriendshipAgent;
-import main.java.abstraction.ProfileRDF;
 import main.java.abstraction.ResultDialogComponents;
 import main.java.abstraction.UserProfile;
+import main.java.rdf.ProfileRDF;
 
 public class ResultDialogController extends ResultDialogComponents {
 
@@ -65,13 +65,9 @@ public class ResultDialogController extends ResultDialogComponents {
         String nickname = nameChoiceBox.getValue();
 
         switch (profile.getSearchType()) {
-            case DIRECT_MESSAGE:
-                profile.addDirectMessage(nickname);
-                rdfModel.addNewDirectMessage(profile.getUserID(), nickname);
-                break;
             case FRIEND:
                 profile.addFriend(nickname);
-                rdfModel.addNewFriend(profile.getUserID(), nickname);
+                rdfModel.addFriend(profile.getUserID(), nickname);
                 break;
             default:
                 break;
