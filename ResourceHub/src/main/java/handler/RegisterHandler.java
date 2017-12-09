@@ -27,16 +27,21 @@ public class RegisterHandler implements HttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String rawMessage = readMessage(httpExchange.getRequestBody());
         RegisterMessage message = RegisterMessage.parse(rawMessage);
-
-        String userID = message.getUserID();
         ReportMessage report = new ReportMessage();
-        report.setReferencedMessage(message.getType());
-        if (database.insertNewUser(userID, message.getPassword())) {
-            report.setResult(true);
-            report.setStatusCode(ServerStatusCodes.REGISTER_CORRECT);
+        report.setReferencedMessage(RegisterMessage.ID);
+
+        if (message != null) {
+            String userID = message.getUserID();
+            if (database.insertNewUser(userID, message.getPassword())) {
+                report.setResult(true);
+                report.setStatusCode(ServerStatusCodes.REGISTER_CORRECT);
+            } else {
+                report.setResult(false);
+                report.setStatusCode(ServerStatusCodes.REGISTER_KNOWN_USER_ID);
+            }
         } else {
             report.setResult(false);
-            report.setStatusCode(ServerStatusCodes.REGISTER_KNOWN_USER_ID);
+            report.setStatusCode(ServerStatusCodes.WRONG_MESSAGE_TYPE);
         }
 
         String rawReport = report.getMessage();

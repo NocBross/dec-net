@@ -1,6 +1,7 @@
 package test.java.util;
 
 import java.sql.ResultSet;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -35,6 +36,7 @@ public class DatabaseConnectorTest {
      */
     private void testMethods(ServerSecrets secrets) {
         try {
+            List<String> cache = null;
             DatabaseConnector connector = new DatabaseConnector(secrets.getDatabaseUser(),
                     secrets.getDatabasePassword());
 
@@ -60,6 +62,14 @@ public class DatabaseConnectorTest {
             result = connector.lookingForNickname("some_other_name");
             Assert.assertFalse(result.next());
 
+            // test cache methods
+            Assert.assertTrue(connector.insertCache(TestData.RESOURCE, TestData.NICKNAME));
+            Assert.assertFalse(connector.insertCache(TestData.RESOURCE, TestData.NICKNAME));
+            cache = connector.readCache(TestData.RESOURCE);
+            Assert.assertEquals(1, cache.size());
+            Assert.assertEquals(TestData.NICKNAME, cache.get(0));
+            Assert.assertTrue(connector.deleteCache(TestData.RESOURCE, TestData.NICKNAME));
+
             // test deleteUser
             Assert.assertTrue(connector.deleteUser("some_other_name"));
             Assert.assertTrue(connector.deleteUser(TestData.NICKNAME));
@@ -70,6 +80,7 @@ public class DatabaseConnectorTest {
             Assert.assertFalse(connector.insertNewUser(TestData.NICKNAME, TestData.PASSWORD));
             Assert.assertFalse(connector.loginQuery(TestData.NICKNAME, TestData.PASSWORD));
             Assert.assertFalse(connector.deleteUser(TestData.NICKNAME));
+            Assert.assertFalse(connector.deleteCache(TestData.RESOURCE, TestData.NICKNAME));
         } catch (Exception e) {
             e.printStackTrace();
             throw new AssertionError();

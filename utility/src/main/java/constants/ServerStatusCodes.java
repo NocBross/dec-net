@@ -28,4 +28,9 @@ public class ServerStatusCodes {
      */
     public static final int REGISTER_KNOWN_USER_ID = 2001;
 
+    /**
+     * Defines the statuscode which is used if the wrong message was send.
+     */
+    public static final int WRONG_MESSAGE_TYPE = 0;
+
 }

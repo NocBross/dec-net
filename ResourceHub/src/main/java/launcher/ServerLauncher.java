@@ -17,7 +17,7 @@ public class ServerLauncher {
         secrets.loadServerSecrets();
 
         CustomService[] services = new CustomService[2];
-        ShippingService shippingService = new ShippingService();
+        ShippingService shippingService = new ShippingService(secrets);
         services[0] = shippingService;
         services[1] = new LoginService(Network.NETWORK_HUB_PORT, secrets, shippingService);
         WebService webService = new WebService(Network.SERVER_WEBSERVICE_PORT, secrets, shippingService);

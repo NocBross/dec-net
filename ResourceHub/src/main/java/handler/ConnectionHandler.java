@@ -36,12 +36,12 @@ public class ConnectionHandler implements HttpHandler {
 
     private void handleGET(HttpExchange httpExchange) throws IOException {
         int status = 400;
-        String response = "";
+        String response = "<b>BAD REQUEST</b>";
         String request = httpExchange.getRequestURI().toString();
         String[] connectionRequests = request.split(WebServiceConstants.CONTEXT_SEPARATOR_ESCAPED);
         AddressMessage message = null;
 
-        if (connectionRequests.length >= 2) {
+        if (connectionRequests.length == 2) {
             String[] connectionRequest = connectionRequests[1].split(WebServiceConstants.KEY_VALUE_SEPARATOR);
             IPAddressData data = shippingService.getAddressData(connectionRequest[1]);
 
@@ -70,7 +70,8 @@ public class ConnectionHandler implements HttpHandler {
     }
 
     private void handlePOST(HttpExchange httpExchange) throws IOException {
-        int status = 200;
+        int status = 400;
+        String response = "<b>BAD REQUEST</b>";
         String line = "";
         String rawMessage = "";
         BufferedReader reader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
@@ -80,10 +81,17 @@ public class ConnectionHandler implements HttpHandler {
         }
 
         AddressMessage message = AddressMessage.parse(rawMessage);
-        shippingService.updateAddressData(message);
+        if (message != null) {
+            shippingService.updateAddressData(message);
+            status = 200;
+            response = "<b>OK</b>";
+        }
 
         httpExchange.getResponseHeaders().add("Content-type", "text/html");
-        httpExchange.sendResponseHeaders(status, 0);
+        httpExchange.sendResponseHeaders(status, response.length());
+        OutputStream os = httpExchange.getResponseBody();
+        os.write(response.getBytes());
+        os.close();
     }
 
 }

@@ -8,6 +8,7 @@ import com.sun.net.httpserver.HttpServer;
 import main.java.constants.WebServiceContext;
 import main.java.handler.ConnectionHandler;
 import main.java.handler.RegisterHandler;
+import main.java.handler.ResourceHandler;
 import main.java.handler.SearchHandler;
 import main.java.util.ServerSecrets;
 
@@ -20,6 +21,7 @@ public class WebService {
 
         server.createContext(WebServiceContext.CONNECTION, new ConnectionHandler(shippingService));
         server.createContext(WebServiceContext.REGISTER, new RegisterHandler(secrets));
+        server.createContext(WebServiceContext.RESOURCE, new ResourceHandler(shippingService));
         server.createContext(WebServiceContext.SEARCH, new SearchHandler(secrets));
     }
 

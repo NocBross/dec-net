@@ -18,6 +18,11 @@ public class WebServiceContext {
     public static final String REGISTER = "/register";
 
     /**
+     * Defines the context which is used to handle resources.
+     */
+    public static final String RESOURCE = "/";;
+
+    /**
      * Defines the context which used to find new people.
      */
     public static final String SEARCH = "/search";

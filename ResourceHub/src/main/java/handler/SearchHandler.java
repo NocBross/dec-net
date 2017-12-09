@@ -24,13 +24,12 @@ public class SearchHandler implements HttpHandler {
         OutputStream os = null;
         try {
             int status = 400;
-            String response = "";
+            String response = "<b>BAD REQUEST</b>";
             String request = httpExchange.getRequestURI().toString();
             String[] searchRequests = request.split(WebServiceConstants.CONTEXT_SEPARATOR_ESCAPED);
 
-            httpExchange.getResponseHeaders().add("Content-type", "text/html");
-            for (int i = 1; i < searchRequests.length; i++) {
-                String[] searchRequest = searchRequests[i].split(WebServiceConstants.KEY_VALUE_SEPARATOR);
+            if (searchRequests.length == 2) {
+                String[] searchRequest = searchRequests[1].split(WebServiceConstants.KEY_VALUE_SEPARATOR);
 
                 switch (searchRequest[0]) {
                     case WebServiceConstants.USER_ID_KEY:
@@ -43,28 +42,28 @@ public class SearchHandler implements HttpHandler {
                         status = 200;
                         break;
                     default:
-                        response = "";
+                        response = "<b>NOT FOUND</b>";
                         status = 404;
-                        i = searchRequests.length;
                         break;
                 }
             }
 
+            httpExchange.getResponseHeaders().add("Content-type", "text/html");
             httpExchange.sendResponseHeaders(status, response.length());
             os = httpExchange.getResponseBody();
             os.write(response.getBytes());
+            os.flush();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            httpExchange.close();
         }
+
+        if (os != null) {
+            try {
+                os.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        httpExchange.close();
     }
 }

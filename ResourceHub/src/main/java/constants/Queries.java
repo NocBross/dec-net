@@ -13,15 +13,31 @@ public class Queries {
     public static final String CREATE_DATABASE = "CREATE DATABASE IF NOT EXISTS " + Database.NAME;
 
     /**
+     * Creates the resource_cache table if no one exists.
+     */
+    public static final String CREATE_RESOURCE_CACHE = "CREATE TABLE IF NOT EXISTS resource_cache (resource TEXT NOT NULL, store varchar(255) NOT NULL, "
+            + "FOREIGN KEY (store) REFERENCES user_data(nickname) ON UPDATE CASCADE ON DELETE CASCADE)";
+
+    /**
      * Creates the user_data table if no one exists.
      */
     public static final String CREATE_USER_DATA = "CREATE TABLE IF NOT EXISTS user_data ( nickname varchar(255) NOT NULL, password varchar(255) NOT NULL, "
             + "PRIMARY KEY (nickname))";
 
     /**
+     * Deletes a specific resource.
+     */
+    public static final String DELETE_CACHE = "DELETE FROM resource_cache WHERE resource=? AND store=?";
+
+    /**
      * Deletes all entries in all tables with the given mail address.
      */
     public static final String DELETE_USER = "DELETE FROM user_data WHERE nickname=?";
+
+    /**
+     * Inserts a new cached resource into the resource_cache table.
+     */
+    public static final String INSERT_CACHE = "INSERT INTO resource_cache (resource, store) VALUES (?, ?)";
 
     /**
      * Inserts a new user into the user_data table.
@@ -33,6 +49,11 @@ public class Queries {
      * be one.
      */
     public static final String LOGIN_QUERY = "SELECT COUNT(*) AS 'numberOfRows', nickname, password FROM user_data WHERE nickname=?";
+
+    /**
+     * Selects all temporary stores for one resource.
+     */
+    public static final String READ_CACHE = "SELECT store FROM resource_cache WHERE resource=?";
 
     /**
      * Replaced the old mail address with the new one.

@@ -28,7 +28,7 @@ public class ServiceWatchdogTest {
             ServerSecrets secrets = new ServerSecrets();
             secrets.loadServerSecrets();
             int numberOfServices = 2;
-            ShippingService shippingService = new ShippingService();
+            ShippingService shippingService = new ShippingService(secrets);
             WebService webservice = new WebService(19999, secrets, shippingService);
             CustomService[] services = new CustomService[numberOfServices];
             services[0] = shippingService;

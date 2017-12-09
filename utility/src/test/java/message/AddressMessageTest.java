@@ -1,5 +1,6 @@
 package test.java.message;
 
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,6 +17,7 @@ public class AddressMessageTest {
         String externalAddress = "2001:db8:0:8d3:0:8a2e:70:7344";
         String userID = "test@mail";
         AddressMessage message = new AddressMessage();
+        JSONObject wrongMessage = new JSONObject();
 
         // test type
         Assert.assertEquals("ip_address", message.getType());
@@ -64,6 +66,15 @@ public class AddressMessageTest {
         AddressMessage testMessage = AddressMessage.parse(message.getMessage());
         Assert.assertNotNull(testMessage);
         Assert.assertEquals(message.getMessage(), testMessage.getMessage());
+
+        wrongMessage.put("type", AddressMessage.ID);
+        wrongMessage.put("method", "test");
+        AddressMessage dummy = AddressMessage.parse(wrongMessage.toString());
+        Assert.assertEquals(-1, dummy.getLocalPort());
+        Assert.assertEquals(-1, dummy.getExternalPort());
+        Assert.assertNull(dummy.getLocalAddress());
+        Assert.assertNull(dummy.getExternalAddress());
+        Assert.assertNull(dummy.getUserID());
     }
 
 }

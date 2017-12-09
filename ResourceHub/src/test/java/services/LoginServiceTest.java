@@ -27,7 +27,7 @@ public class LoginServiceTest {
         try {
             ServerSecrets secrets = new ServerSecrets();
             secrets.loadServerSecrets();
-            ShippingService shippingService = new ShippingService();
+            ShippingService shippingService = new ShippingService(secrets);
             CustomService loginService = new LoginService(TestData.SERVER_PORT, secrets, shippingService);
             shippingService.start();
             loginService.start();

@@ -9,6 +9,11 @@ public class ServerSecretsTest {
 
     @Test
     public void test() {
+        testWithoutPath();
+        testWithPath();
+    }
+
+    private void testWithoutPath() {
         ServerSecrets secrets = new ServerSecrets();
 
         // test initial values
@@ -23,6 +28,23 @@ public class ServerSecretsTest {
         } catch (Exception e) {
             e.printStackTrace();
             throw new AssertionError();
+        }
+    }
+
+    private void testWithPath() {
+        String path = "secrets/testSecrets.txt";
+        ServerSecrets secrets2 = new ServerSecrets(path);
+
+        // test initial values
+        Assert.assertEquals("", secrets2.getDatabaseUser());
+        Assert.assertEquals("", secrets2.getDatabasePassword());
+
+        // load secrets
+        try {
+            secrets2.loadServerSecrets();
+            throw new AssertionError();
+        } catch (Exception e) {
+
         }
     }
 

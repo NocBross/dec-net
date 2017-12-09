@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -17,9 +19,12 @@ public class DatabaseConnector {
     private Connection connection;
 
     private PreparedStatement countNicknameStatement;
+    private PreparedStatement deleteCacheStatament;
     private PreparedStatement deleteUserStatement;
+    private PreparedStatement insertCacheStatement;
     private PreparedStatement insertUserStatement;
     private PreparedStatement loginStatement;
+    private PreparedStatement readCacheStatement;
     private PreparedStatement updateNicknameStatement;
     private PreparedStatement updatePasswordStatement;
     private PreparedStatement searchStatement;
@@ -30,10 +35,13 @@ public class DatabaseConnector {
 
             Class.forName(Database.JDBC_DRIVER);
             connection = DriverManager.getConnection(Database.DB_URL, databaseUser, databasePassword);
+            deleteCacheStatament = connection.prepareStatement(Queries.DELETE_CACHE);
             deleteUserStatement = connection.prepareStatement(Queries.DELETE_USER);
             countNicknameStatement = connection.prepareStatement(Queries.COUNT_NICKNAME);
+            insertCacheStatement = connection.prepareStatement(Queries.INSERT_CACHE);
             insertUserStatement = connection.prepareStatement(Queries.INSERT_USER);
             loginStatement = connection.prepareStatement(Queries.LOGIN_QUERY);
+            readCacheStatement = connection.prepareStatement(Queries.READ_CACHE);
             updateNicknameStatement = connection.prepareStatement(Queries.UPDATE_NICKNAME);
             updatePasswordStatement = connection.prepareStatement(Queries.UPDATE_PASSWORD);
             searchStatement = connection.prepareStatement(Queries.SEARCH);
@@ -49,10 +57,13 @@ public class DatabaseConnector {
      */
     public void closeConnection() {
         try {
+            deleteCacheStatament.close();
             deleteUserStatement.close();
             countNicknameStatement.close();
+            insertCacheStatement.close();
             insertUserStatement.close();
             loginStatement.close();
+            readCacheStatement.close();
             updateNicknameStatement.close();
             updatePasswordStatement.close();
             searchStatement.close();
@@ -60,6 +71,54 @@ public class DatabaseConnector {
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
+    }
+
+    public boolean deleteCache(String resource, String store) {
+        try {
+            deleteCacheStatament.setString(1, resource);
+            deleteCacheStatament.setString(2, store);
+            deleteCacheStatament.execute();
+
+            return true;
+        } catch (SQLException sqle) {
+        }
+
+        return false;
+    }
+
+    /**
+     * Deletes a user from the database.
+     * 
+     * @param nickname
+     *            - mail of the user (hashed or not)
+     * @return true in case of success; false otherwise
+     */
+    public boolean deleteUser(String nickname) {
+        try {
+            deleteUserStatement.setString(1, nickname);
+            deleteUserStatement.execute();
+
+            return true;
+        } catch (SQLException sqle) {
+        }
+
+        return false;
+    }
+
+    public boolean insertCache(String resource, String store) {
+        try {
+            List<String> existingCache = readCache(resource);
+            if (!existingCache.contains(store)) {
+                insertCacheStatement.setString(1, resource);
+                insertCacheStatement.setString(2, store);
+                insertCacheStatement.execute();
+
+                return true;
+            }
+        } catch (SQLException sqle) {
+        }
+
+        return false;
     }
 
     /**
@@ -153,23 +212,19 @@ public class DatabaseConnector {
         return false;
     }
 
-    /**
-     * Deletes a user from the database.
-     * 
-     * @param nickname
-     *            - mail of the user (hashed or not)
-     * @return true in case of success; false otherwise
-     */
-    public boolean deleteUser(String nickname) {
-        try {
-            deleteUserStatement.setString(1, nickname);
-            deleteUserStatement.execute();
+    public List<String> readCache(String resource) {
+        List<String> cache = new LinkedList<String>();
 
-            return true;
+        try {
+            readCacheStatement.setString(1, resource);
+            ResultSet rs = readCacheStatement.executeQuery();
+            while (rs.next()) {
+                cache.add(rs.getString("store"));
+            }
         } catch (SQLException sqle) {
         }
 
-        return false;
+        return cache;
     }
 
     /**
@@ -187,6 +242,7 @@ public class DatabaseConnector {
         statement.execute(Queries.CREATE_DATABASE);
         statement.execute(Queries.USE_DATABASE);
         statement.execute(Queries.CREATE_USER_DATA);
+        statement.execute(Queries.CREATE_RESOURCE_CACHE);
 
         statement.close();
         connection.close();

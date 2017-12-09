@@ -6,7 +6,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketException;
 
 /**
  * Wrapper class for a tcp connection.
@@ -51,8 +50,7 @@ public class TCPConnection {
     public void close() throws IOException {
         try {
             out.close();
-        } catch (SocketException se) {
-
+        } catch (Exception e) {
         }
 
         inBuff.close();
