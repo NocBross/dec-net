@@ -19,6 +19,12 @@ public class Queries {
             + "FOREIGN KEY (store) REFERENCES user_data(nickname) ON UPDATE CASCADE ON DELETE CASCADE)";
 
     /**
+     * Creates the update_stream table of no exists.
+     */
+    public static final String CREATE_UPDATE_STREAM = "CREATE TABLE IF NOT EXISTS update_stream (nickname varchar(255) NOT NULL, message TEXT NOT NULL, "
+            + " FOREIGN KEY (nickname) REFERENCES user_data(nickname) ON UPDATE CASCADE ON DELETE CASCADE)";
+
+    /**
      * Creates the user_data table if no one exists.
      */
     public static final String CREATE_USER_DATA = "CREATE TABLE IF NOT EXISTS user_data ( nickname varchar(255) NOT NULL, password varchar(255) NOT NULL, "
@@ -30,6 +36,11 @@ public class Queries {
     public static final String DELETE_CACHE = "DELETE FROM resource_cache WHERE resource=? AND store=?";
 
     /**
+     * Deletes a specific update message.
+     */
+    public static final String DELETE_UPDATE_MESSAGE = "DELETE FROM update_stream WHERE nickname=? AND message=?";
+
+    /**
      * Deletes all entries in all tables with the given mail address.
      */
     public static final String DELETE_USER = "DELETE FROM user_data WHERE nickname=?";
@@ -38,6 +49,11 @@ public class Queries {
      * Inserts a new cached resource into the resource_cache table.
      */
     public static final String INSERT_CACHE = "INSERT INTO resource_cache (resource, store) VALUES (?, ?)";
+
+    /**
+     * Inserts a new update message into the update_stream table.
+     */
+    public static final String INSERT_UPDATE_MESSAGE = "INSERT INTO update_stream (nickname, message) VALUES (?, ?)";
 
     /**
      * Inserts a new user into the user_data table.
@@ -54,6 +70,11 @@ public class Queries {
      * Selects all temporary stores for one resource.
      */
     public static final String READ_CACHE = "SELECT store FROM resource_cache WHERE resource=?";
+
+    /**
+     * Selects all messages for a specific userID.
+     */
+    public static final String READ_UPDATE_MESSAGES = "SELECT message FROM update_stream WHERE nickname=?";
 
     /**
      * Replaced the old mail address with the new one.

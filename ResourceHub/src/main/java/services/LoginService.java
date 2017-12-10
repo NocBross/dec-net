@@ -2,12 +2,14 @@ package main.java.services;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.util.List;
 
 import main.java.connection.TCPConnection;
 import main.java.constants.LogFiles;
 import main.java.constants.ServerStatusCodes;
 import main.java.message.LoginMessage;
 import main.java.message.ReportMessage;
+import main.java.message.UpdateMessage;
 import main.java.service.CustomService;
 import main.java.util.DatabaseConnector;
 import main.java.util.ServerSecrets;
@@ -35,12 +37,11 @@ public class LoginService extends CustomService {
                 message = LoginMessage.parse(clientConnection.getData());
             } while (message == null);
 
-            String nickname = message.getNickname();
+            String userID = message.getNickname();
             String password = message.getPassword();
             ReportMessage report = new ReportMessage();
             report.setReferencedMessage(message.getType());
-            if (database.loginQuery(nickname, password)) {
-                shippingService.addConnection(nickname, clientConnection);
+            if (database.loginQuery(userID, password)) {
                 report.setResult(true);
                 report.setStatusCode(ServerStatusCodes.LOGIN_CORRECT);
             } else {
@@ -49,7 +50,10 @@ public class LoginService extends CustomService {
             }
 
             clientConnection.sendData(report.getMessage());
-            if (!report.getResult()) {
+            if (report.getResult()) {
+                shippingService.addConnection(userID, clientConnection);
+                sendUpdateMessages(userID);
+            } else {
                 clientConnection.close();
             }
         } catch (SocketTimeoutException ste) {
@@ -62,6 +66,17 @@ public class LoginService extends CustomService {
             }
         } catch (Exception e) {
             logger.writeLog("something is wrong with the streams or the incoming message", e);
+        }
+    }
+
+    private void sendUpdateMessages(String userID) {
+        List<String> messages = database.readUpdateMessages(userID);
+
+        for (int i = 0; i < messages.size(); i++) {
+            UpdateMessage message = UpdateMessage.parse(messages.get(i));
+            if (shippingService.sendUpdate(userID, message)) {
+                database.deleteUpdateMessage(userID, messages.get(i));
+            }
         }
     }
 

@@ -20,11 +20,14 @@ public class DatabaseConnector {
 
     private PreparedStatement countNicknameStatement;
     private PreparedStatement deleteCacheStatament;
+    private PreparedStatement deleteUpdateMessageStatament;
     private PreparedStatement deleteUserStatement;
     private PreparedStatement insertCacheStatement;
+    private PreparedStatement insertUpdateMessageStatement;
     private PreparedStatement insertUserStatement;
     private PreparedStatement loginStatement;
     private PreparedStatement readCacheStatement;
+    private PreparedStatement readUpdateMessageStatement;
     private PreparedStatement updateNicknameStatement;
     private PreparedStatement updatePasswordStatement;
     private PreparedStatement searchStatement;
@@ -36,12 +39,15 @@ public class DatabaseConnector {
             Class.forName(Database.JDBC_DRIVER);
             connection = DriverManager.getConnection(Database.DB_URL, databaseUser, databasePassword);
             deleteCacheStatament = connection.prepareStatement(Queries.DELETE_CACHE);
+            deleteUpdateMessageStatament = connection.prepareStatement(Queries.DELETE_UPDATE_MESSAGE);
             deleteUserStatement = connection.prepareStatement(Queries.DELETE_USER);
             countNicknameStatement = connection.prepareStatement(Queries.COUNT_NICKNAME);
             insertCacheStatement = connection.prepareStatement(Queries.INSERT_CACHE);
+            insertUpdateMessageStatement = connection.prepareStatement(Queries.INSERT_UPDATE_MESSAGE);
             insertUserStatement = connection.prepareStatement(Queries.INSERT_USER);
             loginStatement = connection.prepareStatement(Queries.LOGIN_QUERY);
             readCacheStatement = connection.prepareStatement(Queries.READ_CACHE);
+            readUpdateMessageStatement = connection.prepareStatement(Queries.READ_UPDATE_MESSAGES);
             updateNicknameStatement = connection.prepareStatement(Queries.UPDATE_NICKNAME);
             updatePasswordStatement = connection.prepareStatement(Queries.UPDATE_PASSWORD);
             searchStatement = connection.prepareStatement(Queries.SEARCH);
@@ -58,12 +64,15 @@ public class DatabaseConnector {
     public void closeConnection() {
         try {
             deleteCacheStatament.close();
+            deleteUpdateMessageStatament.close();
             deleteUserStatement.close();
             countNicknameStatement.close();
             insertCacheStatement.close();
+            insertUpdateMessageStatement.close();
             insertUserStatement.close();
             loginStatement.close();
             readCacheStatement.close();
+            readUpdateMessageStatement.close();
             updateNicknameStatement.close();
             updatePasswordStatement.close();
             searchStatement.close();
@@ -78,6 +87,19 @@ public class DatabaseConnector {
             deleteCacheStatament.setString(1, resource);
             deleteCacheStatament.setString(2, store);
             deleteCacheStatament.execute();
+
+            return true;
+        } catch (SQLException sqle) {
+        }
+
+        return false;
+    }
+
+    public boolean deleteUpdateMessage(String userID, String message) {
+        try {
+            deleteUpdateMessageStatament.setString(1, userID);
+            deleteUpdateMessageStatament.setString(2, message);
+            deleteUpdateMessageStatament.execute();
 
             return true;
         } catch (SQLException sqle) {
@@ -112,6 +134,22 @@ public class DatabaseConnector {
                 insertCacheStatement.setString(1, resource);
                 insertCacheStatement.setString(2, store);
                 insertCacheStatement.execute();
+
+                return true;
+            }
+        } catch (SQLException sqle) {
+        }
+
+        return false;
+    }
+
+    public boolean insertUpdateMessage(String userID, String message) {
+        try {
+            List<String> existingCache = readUpdateMessages(userID);
+            if (!existingCache.contains(message)) {
+                insertUpdateMessageStatement.setString(1, userID);
+                insertUpdateMessageStatement.setString(2, message);
+                insertUpdateMessageStatement.execute();
 
                 return true;
             }
@@ -227,6 +265,21 @@ public class DatabaseConnector {
         return cache;
     }
 
+    public List<String> readUpdateMessages(String userID) {
+        List<String> cache = new LinkedList<String>();
+
+        try {
+            readUpdateMessageStatement.setString(1, userID);
+            ResultSet rs = readUpdateMessageStatement.executeQuery();
+            while (rs.next()) {
+                cache.add(rs.getString("message"));
+            }
+        } catch (SQLException sqle) {
+        }
+
+        return cache;
+    }
+
     /**
      * Initializes the database.
      */
@@ -243,6 +296,7 @@ public class DatabaseConnector {
         statement.execute(Queries.USE_DATABASE);
         statement.execute(Queries.CREATE_USER_DATA);
         statement.execute(Queries.CREATE_RESOURCE_CACHE);
+        statement.execute(Queries.CREATE_UPDATE_STREAM);
 
         statement.close();
         connection.close();

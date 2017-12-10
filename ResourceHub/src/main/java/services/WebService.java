@@ -10,6 +10,7 @@ import main.java.handler.ConnectionHandler;
 import main.java.handler.RegisterHandler;
 import main.java.handler.ResourceHandler;
 import main.java.handler.SearchHandler;
+import main.java.handler.UpdateHandler;
 import main.java.util.ServerSecrets;
 
 public class WebService {
@@ -23,6 +24,7 @@ public class WebService {
         server.createContext(WebServiceContext.REGISTER, new RegisterHandler(secrets));
         server.createContext(WebServiceContext.RESOURCE, new ResourceHandler(shippingService));
         server.createContext(WebServiceContext.SEARCH, new SearchHandler(secrets));
+        server.createContext(WebServiceContext.UPDATE, new UpdateHandler(secrets, shippingService));
     }
 
     public void startService() {

@@ -124,11 +124,11 @@ public class ShippingService extends CustomService {
         return resourceData;
     }
 
-    public boolean sendUpdate(String destination, UpdateMessage message) {
+    public boolean sendUpdate(String userID, UpdateMessage message) {
         boolean wasSend = false;
         connectionLock.lock();
 
-        TCPConnection connection = connections.get(destination);
+        TCPConnection connection = connections.get(userID);
         if (connection != null && connection.isConnected()) {
             try {
                 connection.sendData(message.getMessage());

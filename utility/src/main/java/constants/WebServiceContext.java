@@ -27,4 +27,10 @@ public class WebServiceContext {
      */
     public static final String SEARCH = "/search";
 
+    /**
+     * Defines the contest which used to notify other users if a resource has
+     * changed.
+     */
+    public static final String UPDATE = "/update";
+
 }
