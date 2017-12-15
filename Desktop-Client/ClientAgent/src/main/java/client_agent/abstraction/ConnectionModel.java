@@ -1,12 +1,9 @@
 package main.java.client_agent.abstraction;
 
 import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import main.java.connection.IPAddressData;
 import main.java.connection.TCPConnection;
 import main.java.constants.Network;
 
@@ -17,7 +14,6 @@ public class ConnectionModel {
     private Lock httpConnectionLock;
     private Lock serverConnectionLock;
     private TCPConnection serverConnection;
-    private Map<String, IPAddressData> ipAddresses;
     // end of attributes
 
     // constructor
@@ -27,7 +23,6 @@ public class ConnectionModel {
         serverConnectionLock = new ReentrantLock();
 
         serverConnection = null;
-        ipAddresses = new HashMap<String, IPAddressData>();
     }
     // end of constructor
 
@@ -50,6 +45,7 @@ public class ConnectionModel {
                 result = true;
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
         unlockServerConnection();
@@ -72,14 +68,11 @@ public class ConnectionModel {
             serverConnection = null;
             result = true;
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
         unlockServerConnection();
         return result;
-    }
-
-    public IPAddressData getIPAddress(String key) {
-        return ipAddresses.get(key);
     }
 
     /**
@@ -128,9 +121,5 @@ public class ConnectionModel {
      */
     public void setServerAddress(InetAddress newServerAddress) {
         serverAddress = newServerAddress;
-    }
-
-    public void updateIPAddresses(String key, IPAddressData data) {
-        ipAddresses.put(key, data);
     }
 }

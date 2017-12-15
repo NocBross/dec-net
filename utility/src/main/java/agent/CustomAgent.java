@@ -3,10 +3,10 @@ package main.java.agent;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.jena.rdf.model.Model;
-
 import javafx.scene.Parent;
 import main.java.constants.AgentID;
+import main.java.message.Message;
+import main.java.message.RDFMessage;
 
 /**
  * The agent super class defines the structure of each agent of the PAC pattern.
@@ -119,12 +119,12 @@ public abstract class CustomAgent {
     /**
      * Sends data to the server or to other clients.
      * 
-     * @param destination
+     * @param url
      *            - connection end point which will get the message
      * @param message
      *            - massage which has to send to the end point
      */
-    public abstract void sendMessage(String destination, String resource, String message);
+    public abstract void sendMessage(String url, Message message);
 
     /**
      * Distributes the given message to all children.
@@ -153,7 +153,7 @@ public abstract class CustomAgent {
      * 
      * @param rdfModel
      */
-    public abstract void storeRDFModel(String resourcePath, Model rdfModel);
+    public abstract void storeRDFModel(RDFMessage message);
 
     /**
      * Hides the current agent and shows the given destination agent.

@@ -8,9 +8,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import main.java.connection.IPAddressData;
 import main.java.connection.TCPConnection;
-import main.java.message.AddressMessage;
 import main.java.message.CacheMessage;
 import main.java.message.LogoutMessage;
 import main.java.message.UpdateMessage;
@@ -63,7 +61,6 @@ public class ShippingServiceTest {
                 }
 
                 // test
-                testAddressData();
                 testResource();
                 testUpdate();
                 Thread.sleep(5000);
@@ -88,57 +85,12 @@ public class ShippingServiceTest {
             }
         }
 
-        private void testAddressData() throws Exception {
-            try {
-                int existingUserID = 0;
-                String notExistingUserID = "testID@localhost";
-                AddressMessage message = new AddressMessage();
-                IPAddressData data = null;
-
-                // test not existing userID
-                Assert.assertTrue(message.setUserID(notExistingUserID));
-                service.updateAddressData(message);
-                Assert.assertNull(service.getAddressData(notExistingUserID));
-
-                // test existing userID but with data
-                Assert.assertTrue(message.setUserID(connectionIDs[existingUserID]));
-                service.updateAddressData(message);
-                data = service.getAddressData(connectionIDs[existingUserID]);
-                Assert.assertNotNull(data);
-                Assert.assertNull(data.getActiveAddress());
-                Assert.assertEquals(-1, data.getActivePort());
-                Assert.assertEquals(connections[existingUserID].getLocalAddress(), data.getExternalAddress());
-                Assert.assertEquals(connections[existingUserID].getRemotePort(), data.getExternalPort());
-                Assert.assertNull(message.getLocalAddress(), data.getLocalAddress());
-                Assert.assertEquals(-1, data.getLocalPort());
-
-                // test existing userID but with data
-                Assert.assertTrue(message.setUserID(connectionIDs[existingUserID]));
-                Assert.assertTrue(message.setExternalAddress(connections[existingUserID].getInetAddress()));
-                Assert.assertTrue(message.setExternalPort(connections[existingUserID].getRemotePort()));
-                Assert.assertTrue(message.setLocalAddress(connections[existingUserID].getLocalAddress()));
-                Assert.assertTrue(message.setLocalPort(connections[existingUserID].getLocalPort()));
-                service.updateAddressData(message);
-                data = service.getAddressData(connectionIDs[existingUserID]);
-                Assert.assertNotNull(data);
-                Assert.assertNull(data.getActiveAddress());
-                Assert.assertEquals(-1, data.getActivePort());
-                Assert.assertEquals(message.getExternalAddress(), data.getExternalAddress());
-                Assert.assertEquals(message.getExternalPort(), data.getExternalPort());
-                Assert.assertEquals(message.getLocalAddress(), data.getLocalAddress());
-                Assert.assertEquals(message.getLocalPort(), data.getLocalPort());
-            } catch (AssertionError ae) {
-                ae.printStackTrace();
-                error = ae;
-            }
-        }
-
         private void testResource() throws Exception {
             try {
                 List<String> cache = null;
 
                 service.addShippingPackage(data, resource);
-                Thread.sleep(1000);
+                Thread.sleep(5000);
                 cache = database.readCache(resource);
                 Assert.assertEquals(3, cache.size());
                 Collections.sort(cache);

@@ -3,6 +3,7 @@ package main.java.controller;
 import main.java.abstraction.RegisterData;
 import main.java.agent.CustomAgent;
 import main.java.agent.RequestController;
+import main.java.constants.Network;
 import main.java.constants.WebServiceContext;
 import main.java.message.RegisterMessage;
 import main.java.message.ReportMessage;
@@ -44,12 +45,15 @@ public class RegisterRequestController implements RequestController {
             return 3;
         }
 
+        String url = Network.NETWORK_PROTOCOL + data.getResourceHubAddress() + ":" + Network.SERVER_WEBSERVICE_PORT
+                + WebServiceContext.REGISTER;
         RegisterMessage message = new RegisterMessage();
         UserIDMessage userIDMessage = new UserIDMessage();
         message.setUserID(data.getUserID());
         userIDMessage.setUserID(data.getUserID());
         message.setPassword(data.getPassword());
-        agent.sendMessage(data.getResourceHubAddress(), WebServiceContext.REGISTER, message.getMessage());
+
+        agent.sendMessage(url, message);
         agent.scatterMessage(userIDMessage.getMessage());
 
         return 0;

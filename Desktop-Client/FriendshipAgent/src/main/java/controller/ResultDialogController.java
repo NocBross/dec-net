@@ -6,21 +6,18 @@ import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import main.java.FriendshipAgent;
+import main.java.abstraction.Profiles;
 import main.java.abstraction.ResultDialogComponents;
-import main.java.abstraction.UserProfile;
-import main.java.rdf.ProfileRDF;
 
 public class ResultDialogController extends ResultDialogComponents {
 
     private FriendshipAgent agent;
-    private ProfileRDF rdfModel;
-    private UserProfile profile;
+    private Profiles profiles;
 
     @FXML
     public void initialize() {
         agent = null;
-        rdfModel = ProfileRDF.getInstance();
-        profile = UserProfile.getInstance();
+        profiles = Profiles.getInstance();
     }
 
     public void close() {
@@ -38,14 +35,11 @@ public class ResultDialogController extends ResultDialogComponents {
 
     public void setResults(List<String> resultList) {
         List<String> filteredResultList = null;
-        resultList.remove(profile.getUserID());
+        resultList.remove(profiles.getActiveUser());
 
-        switch (profile.getSearchType()) {
-            case DIRECT_MESSAGE:
-                filteredResultList = filterList(resultList, profile.getDirectMessages());
-                break;
+        switch (profiles.getSearchType()) {
             case FRIEND:
-                filteredResultList = filterList(resultList, profile.getFriends());
+                filteredResultList = filterList(resultList, profiles.getFriends());
                 break;
             default:
                 break;
@@ -62,17 +56,17 @@ public class ResultDialogController extends ResultDialogComponents {
 
     @FXML
     protected void addButtonAction(ActionEvent event) {
-        String nickname = nameChoiceBox.getValue();
+        String userID = nameChoiceBox.getValue();
 
-        switch (profile.getSearchType()) {
+        switch (profiles.getSearchType()) {
             case FRIEND:
-                profile.addFriend(nickname);
-                rdfModel.addFriend(profile.getUserID(), nickname);
+                profiles.addFriend(userID);
                 break;
             default:
                 break;
         }
         agent.storeRDFModel();
+        agent.sendUpdate(null);
 
         close();
     }

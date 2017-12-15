@@ -15,5 +15,6 @@
 		<module>RegisterAgent</module>
 		<module>SocNetAgent</module>
 		<module>FriendshipAgent</module>
+		<module>PinboardAgent</module>
 	</modules>
 </project>

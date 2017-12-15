@@ -1,8 +1,5 @@
 package test.java.rdf;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.junit.Assert;
@@ -18,12 +15,9 @@ public class ProfileRDFTest {
         String friendID = "test_user_2@localhost";
         String postID = "http://localhost/test_user_1/posts/1";
         String name = "test_user_1";
-        ProfileRDF profile = ProfileRDF.getInstance();
+        ProfileRDF profile = new ProfileRDF();
         List<String> friends = null;
         List<String> posts = null;
-
-        // test getInstance
-        Assert.assertEquals(profile, ProfileRDF.getInstance());
 
         // test name
         profile.setName(userID, "nick");
@@ -55,15 +49,8 @@ public class ProfileRDFTest {
 
         // test model methods
         try {
-            String serializedModel = null;
-            ByteArrayOutputStream writer = new ByteArrayOutputStream();
-            profile.getModel().write(writer);
-            serializedModel = new String(writer.toByteArray(), StandardCharsets.UTF_8);
-            writer.close();
-
-            ByteArrayInputStream reader = new ByteArrayInputStream(serializedModel.getBytes());
-            profile.addModel(reader);
-            reader.close();
+            String serializedModel = profile.getModel();
+            profile.setModel(serializedModel);
 
             Assert.assertEquals(name, profile.getName(userID));
             friends = profile.getFriends();

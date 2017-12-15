@@ -1,11 +1,8 @@
 package main.java.client_agent;
 
-import java.io.ByteArrayOutputStream;
 import java.net.UnknownHostException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.apache.jena.rdf.model.Model;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -21,17 +18,17 @@ import main.java.client_agent.abstraction.ConnectionModel;
 import main.java.client_agent.abstraction.TransmitModel;
 import main.java.client_agent.abstraction.UserModel;
 import main.java.client_agent.controller.ReceiveController;
+import main.java.client_agent.controller.ResourceController;
 import main.java.client_agent.controller.TransmitController;
-import main.java.connection.IPAddressData;
 import main.java.constants.AgentID;
 import main.java.constants.Network;
-import main.java.constants.WebServiceContext;
-import main.java.message.AddressMessage;
+import main.java.constants.WebServiceConstants;
+import main.java.message.CacheMessage;
 import main.java.message.LoginMessage;
 import main.java.message.LogoutMessage;
+import main.java.message.Message;
 import main.java.message.RDFMessage;
 import main.java.message.ReportMessage;
-import main.java.webserver.ClientWebServer;
 
 /**
  * The ClientAgent is the root of the agent tree structure.<br>
@@ -54,9 +51,8 @@ public class ClientAgent extends CustomAgent {
     private TransmitModel transmitModel;
 
     private ReceiveController receiveController;
+    private ResourceController resourceController;
     private TransmitController transmitController;
-
-    private ClientWebServer webserver;
 
     public ClientAgent(Stage primaryStage) throws Exception {
         super(null, AgentID.CLIENT_AGENT);
@@ -91,10 +87,9 @@ public class ClientAgent extends CustomAgent {
             primaryStage.hide();
 
             LogoutMessage message = new LogoutMessage();
-            message.setSender(userModel.getNickname());
-            sendMessage(Network.NETWORK_HUB, null, message.getMessage());
+            message.setSender(userModel.getUserID());
+            sendMessage(Network.NETWORK_HUB, message);
             scatterAllMessage(message.getMessage());
-            webserver.stop();
             transmitController.stopController();
             receiveController.stopController();
 
@@ -114,8 +109,9 @@ public class ClientAgent extends CustomAgent {
 
     @Override
     public void receiveMessage(String message) {
+        handleCacheMessage(message);
+        handleReceiveRDF(message);
         handleReportMessage(message);
-        handleAddressMessage(message);
         scatterMessage(message);
 
         newMessage.set(null);
@@ -129,31 +125,18 @@ public class ClientAgent extends CustomAgent {
     }
 
     @Override
-    public void sendMessage(String destination, String resource, String message) {
-        String url = null;
-        String[] splittedURL = destination.split("@");
+    public void sendMessage(String url, Message message) {
+        boolean messageHasToSend = true;
 
-        if (destination.equals(Network.NETWORK_HUB)) {
-            url = Network.NETWORK_HUB;
-        } else if (splittedURL.length == 1) {
-            url = Network.NETWORK_PROTOCOL + splittedURL[0] + ":" + Network.SERVER_WEBSERVICE_PORT;
-        } else if (splittedURL.length == 2) {
-            IPAddressData data = connectionModel.getIPAddress(destination);
-            if (data != null) {
-                url = Network.NETWORK_PROTOCOL + data.getActiveAddress() + ":" + Network.SERVER_WEBSERVICE_PORT;
+        messageHasToSend = handleLoginMessage(message);
+        messageHasToSend = handleSendRDF(message);
+
+        if (messageHasToSend) {
+            if (message != null) {
+                transmitController.addMessage(url, message.getMessage());
             } else {
-                url = Network.NETWORK_PROTOCOL + splittedURL[1] + ":" + Network.SERVER_WEBSERVICE_PORT + "/"
-                        + splittedURL[0];
+                transmitController.addMessage(url, null);
             }
-        }
-
-        if (resource != null) {
-            url += resource;
-        }
-
-        if (url != null) {
-            handleLoginMessage(message);
-            transmitController.addMessage(url, message);
         }
     }
 
@@ -188,16 +171,12 @@ public class ClientAgent extends CustomAgent {
     }
 
     @Override
-    public void storeRDFModel(String resourcePath, Model rdfModel) {
-        try {
-            ByteArrayOutputStream stringWriter = new ByteArrayOutputStream();
-            rdfModel.write(stringWriter);
-            RDFMessage rdfMessage = new RDFMessage(userModel.getNickname(), stringWriter.toString());
-            String url = Network.LOCALHOST_URL + resourcePath;
-            transmitController.addMessage(url, rdfMessage.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void storeRDFModel(RDFMessage message) {
+        resourceController.updateResource(message);
+        transmitController.addMessage(
+                message.getResourceID().replace(Network.LOCALHOST_ADDRESS,
+                        userModel.getResourceHubAddress() + ":" + Network.SERVER_WEBSERVICE_PORT),
+                message.getMessage());
     }
 
     /**
@@ -207,8 +186,8 @@ public class ClientAgent extends CustomAgent {
      */
     private void createController() throws Exception {
         receiveController = new ReceiveController(connectionModel, this);
+        resourceController = new ResourceController("context");
         transmitController = new TransmitController(this, connectionModel, transmitModel);
-        webserver = new ClientWebServer(Network.CLIENT_WEBSERVER_PORT);
     }
 
     /**
@@ -222,6 +201,20 @@ public class ClientAgent extends CustomAgent {
         transmitModel = new TransmitModel();
     }
 
+    private void handleCacheMessage(String message) {
+        CacheMessage cacheMessage = CacheMessage.parse(message);
+        if (cacheMessage != null) {
+            System.out.println(message);
+            if (cacheMessage.getRequestMethod().equals("GET")) {
+                RDFMessage rdfMessage = resourceController.getResource(cacheMessage.getResource());
+                cacheMessage.setData(rdfMessage.getMessage());
+                transmitController.addMessage(Network.NETWORK_HUB, cacheMessage.getMessage());
+            } else {
+                resourceController.updateResource(RDFMessage.parse(cacheMessage.getData()));
+            }
+        }
+    }
+
     /**
      * Stored the mail address and password from an outgoing login message in the
      * local model.
@@ -229,14 +222,37 @@ public class ClientAgent extends CustomAgent {
      * @param message
      *            - login message
      */
-    private void handleLoginMessage(String message) {
-        LoginMessage loginMessage = LoginMessage.parse(message);
-        if (loginMessage != null) {
-            userModel.setNickname(loginMessage.getNickname());
-            userModel.setPassword(loginMessage.getPassword());
+    private boolean handleLoginMessage(Message message) {
+        if (message != null) {
+            LoginMessage loginMessage = LoginMessage.parse(message.getMessage());
+            if (loginMessage != null) {
+                userModel.setUserID(loginMessage.getNickname());
+                userModel.setPassword(loginMessage.getPassword());
 
-            String url = Network.LOCALHOST_URL + "/" + loginMessage.getNickname() + "/profile";
-            transmitController.addMessage(url, null);
+                String url = "/" + userModel.getResourceHubAddress() + "/" + userModel.getNickname()
+                        + WebServiceConstants.PROFILE_RESOURCE;
+                RDFMessage rdfMessage = resourceController.getResource(url);
+                if (rdfMessage != null) {
+                    updateMessage(rdfMessage.getMessage());
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Handles an incoming rdf message if the given message is a serialized version
+     * of a rdf message.<br>
+     * This method will store the model which is send by this message locally.
+     * 
+     * @param message
+     *            - incoming message
+     */
+    private void handleReceiveRDF(String message) {
+        RDFMessage rdfMessage = RDFMessage.parse(message);
+        if (rdfMessage != null) {
+            resourceController.updateResource(rdfMessage);
         }
     }
 
@@ -252,43 +268,30 @@ public class ClientAgent extends CustomAgent {
             if (reportMessage.getReferencedMessage().equals(LoginMessage.ID) && !reportMessage.getResult()) {
                 connectionModel.deleteServerConnection();
             }
-            if (reportMessage.getReferencedMessage().equals(LoginMessage.ID) && reportMessage.getResult()) {
-                AddressMessage ipMessage = new AddressMessage();
-                ipMessage.setUserID(userModel.getNickname());
-                ipMessage.setLocalAddress(connectionModel.getServerConnection().getLocalAddress());
-                ipMessage.setLocalPort(connectionModel.getServerConnection().getLocalPort());
-
-                sendMessage(userModel.getNickname().split("@")[1], WebServiceContext.CONNECTION,
-                        ipMessage.getMessage());
-            }
         }
     }
 
-    private void handleAddressMessage(String message) {
-        AddressMessage ipMessage = AddressMessage.parse(message);
-        if (ipMessage != null) {
-            IPAddressData data = new IPAddressData();
-            data.setExternalAddress(ipMessage.getExternalAddress());
-            data.setExternalPort(ipMessage.getExternalPort());
-            data.setLocalAddress(ipMessage.getLocalAddress());
-            data.setLocalPort(ipMessage.getLocalPort());
-
-            if (!userModel.getNickname().equals(ipMessage.getUserID())) {
-                if (connectionModel.getIPAddress(userModel.getNickname()).getExternalAddress()
-                        .equals(ipMessage.getExternalAddress())) {
-                    data.setActiveAddress(ipMessage.getLocalAddress());
-                    data.setActivePort(ipMessage.getLocalPort());
-                } else {
-                    data.setActiveAddress(ipMessage.getUserID().split("@")[1]);
-                    data.setActivePort(Network.SERVER_WEBSERVICE_PORT);
+    /**
+     * Checks if the requested resource in the RDFMessage is stored locally.
+     * 
+     * @param message
+     *            - outgoing rdf message
+     * @return returns true if the resource is not stored locally and the request
+     *         has to send to the server, false otherwise
+     */
+    private boolean handleSendRDF(Message message) {
+        if (message != null) {
+            RDFMessage rdfMessage = RDFMessage.parse(message.getMessage());
+            if (rdfMessage != null) {
+                RDFMessage storedModel = resourceController.getResource(rdfMessage.getResourceID());
+                if (storedModel != null) {
+                    updateMessage(storedModel.getMessage());
+                    return false;
                 }
-            } else {
-                data.setActiveAddress(Network.LOCALHOST_ADDRESS);
-                data.setActivePort(Network.CLIENT_WEBSERVER_PORT);
             }
-
-            connectionModel.updateIPAddresses(ipMessage.getUserID(), data);
         }
+
+        return true;
     }
 
     /**
@@ -297,6 +300,5 @@ public class ClientAgent extends CustomAgent {
     private void startController() {
         receiveController.start();
         transmitController.start();
-        webserver.start();
     }
 }

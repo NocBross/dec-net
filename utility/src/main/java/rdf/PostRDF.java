@@ -1,6 +1,7 @@
 package main.java.rdf;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -26,7 +27,6 @@ public class PostRDF {
     private Property hasReply;
     private Resource post;
 
-
     public PostRDF() {
         siocPrefix = "http://rdfs.org/sioc/spec/";
         postModel = ModelFactory.createDefaultModel();
@@ -40,26 +40,23 @@ public class PostRDF {
         post = postModel.createResource(siocPrefix + "Post");
     }
 
-
     public void addReply(String commentURI) {
         post.addLiteral(hasReply, commentURI);
     }
-
 
     public String getContent() {
         return post.getProperty(content).getLiteral().getString();
     }
 
-
     public String getCreator() {
         return post.getProperty(creator).getResource().getProperty(account).getLiteral().getString();
     }
 
-
-    public Model getModel() {
-        return postModel;
+    public String getModel() {
+        ByteArrayOutputStream stringWriter = new ByteArrayOutputStream();
+        postModel.write(stringWriter);
+        return stringWriter.toString();
     }
-
 
     public List<String> getReplys() {
         LinkedList<String> replys = new LinkedList<String>();
@@ -69,8 +66,8 @@ public class PostRDF {
         QueryExecution qexec = QueryExecutionFactory.create(queryFriend, postModel);
 
         ResultSet result = qexec.execSelect();
-        if(result != null) {
-            while(result.hasNext()) {
+        if (result != null) {
+            while (result.hasNext()) {
                 QuerySolution solution = result.next();
                 String reply = solution.getLiteral("reply").toString();
                 replys.add(reply);
@@ -80,12 +77,10 @@ public class PostRDF {
         return replys;
     }
 
-
     public void setContent(String newContent) {
         post.removeAll(content);
         post.addLiteral(content, newContent);
     }
-
 
     public void setCreator(String userID) {
         Resource userAccount = postModel.createResource(siocPrefix + "UserAccount");
@@ -93,8 +88,9 @@ public class PostRDF {
         post.removeAll(creator);
         post.addProperty(creator, userAccount);
     }
-    
-    public void setModel(ByteArrayInputStream stringReader) {
+
+    public void setModel(String serializedModel) {
+        ByteArrayInputStream stringReader = new ByteArrayInputStream(serializedModel.getBytes());
         postModel.read(stringReader, null);
     }
 

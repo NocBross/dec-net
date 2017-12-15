@@ -1,6 +1,7 @@
 package main.java.rdf;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,8 +19,6 @@ import org.apache.jena.sparql.vocabulary.FOAF;
 
 public class ProfileRDF {
 
-    private static ProfileRDF rdfModel = null;
-
     private Model profileModel;
 
     public ProfileRDF() {
@@ -27,23 +26,11 @@ public class ProfileRDF {
         profileModel.setNsPrefix("foaf", FOAF.NS);
     }
 
-    public static ProfileRDF getInstance() {
-        if (rdfModel == null) {
-            rdfModel = new ProfileRDF();
-        }
-
-        return rdfModel;
-    }
-
     public void addFriend(String userID, String newFriend) {
         Resource user = generateUserResource(userID);
         String[] nicknameArray = newFriend.split("@");
 
         user.addProperty(FOAF.knows, "http://" + nicknameArray[1] + "/" + nicknameArray[0]);
-    }
-
-    public void addModel(ByteArrayInputStream stringReader) {
-        profileModel.read(stringReader, null);
     }
 
     public void addPost(String userID, String postID) {
@@ -88,8 +75,10 @@ public class ProfileRDF {
         return friends;
     }
 
-    public Model getModel() {
-        return profileModel;
+    public String getModel() {
+        ByteArrayOutputStream stringWriter = new ByteArrayOutputStream();
+        profileModel.write(stringWriter);
+        return stringWriter.toString();
     }
 
     public String getName(String userID) {
@@ -114,6 +103,11 @@ public class ProfileRDF {
         }
 
         return posts;
+    }
+
+    public void setModel(String serializedModel) {
+        ByteArrayInputStream stringReader = new ByteArrayInputStream(serializedModel.getBytes());
+        profileModel.read(stringReader, null);
     }
 
     public void setName(String userID, String name) {

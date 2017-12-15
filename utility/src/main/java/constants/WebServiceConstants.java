@@ -18,6 +18,11 @@ public class WebServiceConstants {
     public static final String KEY_VALUE_SEPARATOR = "=";
 
     /**
+     * Defines the name of the profile resource.
+     */
+    public static final String PROFILE_RESOURCE = "/profile";
+
+    /**
      * Defines the key which is used to looking for a specific nickname.
      */
     public static final String USER_ID_KEY = "nickname";

@@ -18,7 +18,8 @@ public class SocNetAgent extends CustomMiddleAgent {
     public SocNetAgent(CustomAgent parent, Stage primaryStage) {
         super(parent, AgentID.SOCNET_AGENT, primaryStage);
 
-        children.add(new FriendshipAgent(this));
+        children.add(0, new FriendshipAgent(this));
+        children.add(1, new PinboardAgent(this));
         activeAgent = null;
 
         try {

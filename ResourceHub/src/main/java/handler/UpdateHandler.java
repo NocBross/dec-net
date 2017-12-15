@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import main.java.constants.WebServiceConstants;
 import main.java.message.UpdateMessage;
 import main.java.services.ShippingService;
 import main.java.util.DatabaseConnector;
@@ -46,28 +45,22 @@ public class UpdateHandler implements HttpHandler {
     private void handlePOST(HttpExchange httpExchange) throws IOException {
         int status = 400;
         String response = "<b>BAD REQUEST</b>";
-        String request = httpExchange.getRequestURI().toString();
-        String[] splitRequest = request.split(WebServiceConstants.CONTEXT_SEPARATOR_ESCAPED);
+        String line = "";
+        String rawMessage = "";
+        UpdateMessage message = null;
+        BufferedReader reader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
 
-        if (splitRequest.length == 2) {
-            String destination = splitRequest[1].split(WebServiceConstants.KEY_VALUE_SEPARATOR)[1];
-            String line = "";
-            String rawMessage = "";
-            UpdateMessage message = null;
-            BufferedReader reader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
+        while ((line = reader.readLine()) != null) {
+            rawMessage += line;
+        }
+        message = UpdateMessage.parse(rawMessage);
 
-            while ((line = reader.readLine()) != null) {
-                rawMessage += line;
+        if (message != null) {
+            if (!shippingService.sendUpdate(message.getUserID(), message)) {
+                database.insertUpdateMessage(message.getUserID(), message.getMessage());
             }
-            message = UpdateMessage.parse(rawMessage);
-
-            if (message != null) {
-                if (!shippingService.sendUpdate(destination, message)) {
-                    database.insertUpdateMessage(destination, message.getMessage());
-                }
-                status = 200;
-                response = "<b>OK</b>";
-            }
+            status = 200;
+            response = "<b>OK</b>";
         }
 
         httpExchange.getResponseHeaders().add("Content-type", "text/html");

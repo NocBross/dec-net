@@ -1,42 +1,33 @@
 package main.java.controller;
 
-import java.io.ByteArrayInputStream;
-import java.util.LinkedList;
-import java.util.List;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.input.MouseEvent;
 import main.java.FriendshipAgent;
 import main.java.abstraction.FriendshipSceneComponents;
+import main.java.abstraction.Profiles;
 import main.java.abstraction.SearchType;
-import main.java.abstraction.UserProfile;
 import main.java.agent.CustomAgent;
 import main.java.agent.RootController;
+import main.java.constants.Network;
 import main.java.constants.WebServiceConstants;
-import main.java.constants.WebServiceContext;
-import main.java.message.LoginMessage;
 import main.java.message.RDFMessage;
-import main.java.message.ReportMessage;
 import main.java.message.SearchMessage;
 import main.java.message.UserIDMessage;
-import main.java.rdf.ProfileRDF;
 
 public class FriendshipSceneController extends FriendshipSceneComponents implements RootController {
 
     private FriendshipAgent agent;
-    private ProfileRDF rdfModel;
-    private UserProfile profile;
+    private Profiles profiles;
 
     @FXML
     public void initialize() {
         agent = null;
-        rdfModel = ProfileRDF.getInstance();
-        profile = UserProfile.getInstance();
+        profiles = Profiles.getInstance();
 
-        friendList.setItems(profile.getFriends());
+        friendList.setItems(profiles.getObservableFriends());
         friendPane.setExpanded(true);
-        groupPane.setVisible(false);
+        // groupPane.setVisible(false);
 
         scrollPane.setVvalue(-0.05);
     }
@@ -46,7 +37,6 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         handleUserIDMessage(message);
         handleRDFMessage(message);
         handleSearchMessage(message);
-        handleReportMessage(message);
     }
 
     @Override
@@ -64,16 +54,16 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
      */
     @FXML
     protected void newFriendButtonAction(ActionEvent event) {
-        profile.setSearchType(SearchType.FRIEND);
+        profiles.setSearchType(SearchType.FRIEND);
         agent.showSearchDialog("neuen Freund hinzufügen");
     }
 
     @FXML
     protected void onDeleteFriend(ActionEvent event) {
         String nickname = friendList.getSelectionModel().getSelectedItem();
-        profile.deleteFriend(nickname);
-        rdfModel.deleteFriend(profile.getUserID(), nickname);
+        profiles.deleteFriend(nickname);
         agent.storeRDFModel();
+        agent.sendUpdate(nickname);
     }
 
     @FXML
@@ -86,22 +76,24 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
     private void handleUserIDMessage(String message) {
         UserIDMessage userIDMessage = UserIDMessage.parse(message);
         if (userIDMessage != null) {
-            profile.setUserID(userIDMessage.getUserID());
+            profiles.setActiveUser(userIDMessage.getUserID());
+            friendList.setItems(profiles.getObservableFriends());
         }
     }
 
     private void handleRDFMessage(String message) {
         RDFMessage rdfMessage = RDFMessage.parse(message);
         if (rdfMessage != null) {
-            List<String> friends = null;
-            ByteArrayInputStream stringReader = new ByteArrayInputStream(rdfMessage.getModel().getBytes());
-            rdfModel.addModel(stringReader);
+            if (rdfMessage.getResourceID().indexOf(WebServiceConstants.PROFILE_RESOURCE) != -1) {
+                int addressIndex = 1;
+                String[] splittetURL = rdfMessage.getResourceID().replace(Network.NETWORK_PROTOCOL, "").split("/");
 
-            friends = rdfModel.getFriends();
-            if (friends != null) {
-                for (int i = 0; i < friends.size(); i++) {
-                    profile.addFriend(friends.get(i));
+                if (splittetURL[0] == null || splittetURL[0].equals("")) {
+                    addressIndex++;
                 }
+
+                String userID = splittetURL[addressIndex] + "@" + splittetURL[addressIndex - 1];
+                profiles.setModel(userID, rdfMessage.getModel());
             }
         }
     }
@@ -110,7 +102,7 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         SearchMessage resultMessage = SearchMessage.parse(message);
         if (resultMessage != null) {
             String header = "";
-            switch (profile.getSearchType()) {
+            switch (profiles.getSearchType()) {
                 case DIRECT_MESSAGE:
                 case FRIEND:
                     header = "Gefundene Personen:";
@@ -121,26 +113,6 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
                     break;
             }
             agent.showResultDialog(header, resultMessage.getNicknames());
-        }
-    }
-
-    private void handleReportMessage(String message) {
-        ReportMessage reportMessage = ReportMessage.parse(message);
-
-        if (reportMessage != null) {
-            if (reportMessage.getReferencedMessage().equals(LoginMessage.ID) && reportMessage.getResult()) {
-                List<String> contactList = new LinkedList<String>();
-                contactList.addAll(profile.getDirectMessages());
-                contactList.addAll(profile.getFriends());
-                contactList.add(profile.getUserID());
-
-                for (int i = 0; i < contactList.size(); i++) {
-                    String resource = WebServiceContext.CONNECTION + WebServiceConstants.CONTEXT_SEPARATOR
-                            + WebServiceConstants.USER_ID_KEY + WebServiceConstants.KEY_VALUE_SEPARATOR
-                            + contactList.get(i).split("@")[0];
-                    agent.sendMessage(contactList.get(i).split("@")[1], resource, null);
-                }
-            }
         }
     }
 

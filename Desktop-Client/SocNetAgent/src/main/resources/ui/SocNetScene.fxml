@@ -12,7 +12,6 @@
 				<SplitPane fx:id="verticalSplitPane" dividerPositions="0.67"
 					orientation="VERTICAL">
 					<items>
-						<AnchorPane style="-fx-background-color: #1650AD;" />
 						<AnchorPane style="-fx-background-color: #E81212;" />
 					</items>
 				</SplitPane>

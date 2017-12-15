@@ -3,7 +3,6 @@ package test.java.agent;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.jena.rdf.model.Model;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -14,6 +13,7 @@ import javafx.stage.Stage;
 import main.java.agent.CustomAgent;
 import main.java.agent.CustomMiddleAgent;
 import main.java.constants.AgentID;
+import main.java.message.RDFMessage;
 
 public class CustomMiddleAgentTest {
 
@@ -36,12 +36,12 @@ public class CustomMiddleAgentTest {
     }
 
     private void testWithChildren() {
-        String destination = "test destination";
-        String resource = "/search?nickname=test";
-        String message = "test message";
+        String url = "http://localhost/test";
+        String model = "some model";
         CustomAgent parent = Mockito.mock(CustomAgent.class);
         child = Mockito.mock(CustomAgent.class);
         CustomMiddleAgent agent = new TestAgent(parent, AgentID.AUTHENTICATION_AGENT, null);
+        RDFMessage rdfMessage = new RDFMessage(url, model);
 
         List<Integer> sceneSpy = new LinkedList<Integer>();
         Mockito.doAnswer(new Answer<Integer>() {
@@ -65,60 +65,53 @@ public class CustomMiddleAgentTest {
 
         }).when(child).receiveMessage(Mockito.anyString());
 
-        List<String> destinationListSpy = new LinkedList<String>();
-        List<String> resourceListSpy = new LinkedList<String>();
+        List<String> urlListSpy = new LinkedList<String>();
         List<String> messageListSpy = new LinkedList<String>();
         Mockito.doAnswer(new Answer<String>() {
 
             @Override
             public String answer(InvocationOnMock invocation) throws Throwable {
-                destinationListSpy.add((String) invocation.getArguments()[0]);
-                resourceListSpy.add((String) invocation.getArguments()[1]);
-                messageListSpy.add((String) invocation.getArguments()[2]);
+                urlListSpy.add((String) invocation.getArguments()[0]);
+                messageListSpy.add(((RDFMessage) invocation.getArguments()[1]).getMessage());
                 return null;
             }
 
-        }).when(parent).sendMessage(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        }).when(parent).sendMessage(Mockito.anyString(), Mockito.any());
 
-        List<Model> modelListSpy = new LinkedList<Model>();
+        List<String> modelListSpy = new LinkedList<String>();
         Mockito.doAnswer(new Answer<String>() {
 
             @Override
             public String answer(InvocationOnMock invocation) throws Throwable {
-                resourceListSpy.add((String) invocation.getArguments()[0]);
-                modelListSpy.add((Model) invocation.getArguments()[1]);
+                modelListSpy.add(((RDFMessage) invocation.getArguments()[0]).getMessage());
                 return null;
             }
 
-        }).when(parent).storeRDFModel(Mockito.anyString(), Mockito.any());
+        }).when(parent).storeRDFModel(Mockito.any());
 
         Assert.assertEquals(AgentID.AUTHENTICATION_AGENT, agent.getID());
 
         Assert.assertNull(agent.getScene());
         Assert.assertEquals(1, sceneSpy.size());
 
-        agent.receiveMessage(message);
+        agent.receiveMessage(rdfMessage.getMessage());
         Assert.assertEquals(1, receiveMessageListSpy.size());
-        Assert.assertEquals(message, receiveMessageListSpy.get(0));
+        Assert.assertEquals(rdfMessage.getMessage(), receiveMessageListSpy.get(0));
 
-        agent.scatterMessage(message);
+        agent.scatterMessage(rdfMessage.getMessage());
         Assert.assertEquals(2, receiveMessageListSpy.size());
-        Assert.assertEquals(message, receiveMessageListSpy.get(0));
-        Assert.assertEquals(message, receiveMessageListSpy.get(1));
+        Assert.assertEquals(rdfMessage.getMessage(), receiveMessageListSpy.get(0));
+        Assert.assertEquals(rdfMessage.getMessage(), receiveMessageListSpy.get(1));
 
-        agent.sendMessage(destination, resource, message);
-        Assert.assertEquals(1, destinationListSpy.size());
-        Assert.assertEquals(destination, destinationListSpy.get(0));
-        Assert.assertEquals(1, resourceListSpy.size());
-        Assert.assertEquals(resource, resourceListSpy.get(0));
+        agent.sendMessage(url, rdfMessage);
+        Assert.assertEquals(1, urlListSpy.size());
+        Assert.assertEquals(url, urlListSpy.get(0));
         Assert.assertEquals(1, messageListSpy.size());
-        Assert.assertEquals(message, messageListSpy.get(0));
+        Assert.assertEquals(rdfMessage.getMessage(), messageListSpy.get(0));
 
-        agent.storeRDFModel(destination, null);
-        Assert.assertEquals(2, resourceListSpy.size());
-        Assert.assertEquals(destination, resourceListSpy.get(1));
+        agent.storeRDFModel(rdfMessage);
         Assert.assertEquals(1, modelListSpy.size());
-        Assert.assertNull(modelListSpy.get(0));
+        Assert.assertEquals(rdfMessage.getMessage(), modelListSpy.get(0));
 
         try {
             agent.switchAgent(AgentID.LOGIN_AGENT);

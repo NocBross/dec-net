@@ -15,7 +15,6 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import main.java.constants.WebServiceConstants;
 import main.java.constants.WebServiceContext;
 import main.java.message.ReportMessage;
 import main.java.message.UpdateMessage;
@@ -106,8 +105,7 @@ public class UpdateHandlerTest {
 
     private void testWrongMessageType(int port, String userID, ServerSecrets secrets) throws Exception {
         String response = "";
-        String request = "http://localhost:" + port + WebServiceContext.UPDATE + WebServiceConstants.CONTEXT_SEPARATOR
-                + WebServiceConstants.USER_ID_KEY + WebServiceConstants.KEY_VALUE_SEPARATOR + userID;
+        String request = "http://localhost:" + port + WebServiceContext.UPDATE;
         ShippingService shippingService = Mockito.mock(ShippingService.class);
         WebService service = new WebService(port, secrets, shippingService);
         service.startService();
@@ -141,12 +139,15 @@ public class UpdateHandlerTest {
     }
 
     private void testOnlineUpdate(int port, String userID, ServerSecrets secrets) throws Exception {
+        String resource = "http://localhost/test";
         String response = "";
-        String request = "http://localhost:" + port + WebServiceContext.UPDATE + WebServiceConstants.CONTEXT_SEPARATOR
-                + WebServiceConstants.USER_ID_KEY + WebServiceConstants.KEY_VALUE_SEPARATOR + userID;
+        String request = "http://localhost:" + port + WebServiceContext.UPDATE;
         ShippingService shippingService = Mockito.mock(ShippingService.class);
         WebService service = new WebService(port, secrets, shippingService);
         UpdateMessage update = new UpdateMessage();
+
+        update.setResource(resource);
+        update.setUserID(userID);
 
         List<String> userIDSpy = new LinkedList<String>();
         List<UpdateMessage> messageSpy = new LinkedList<UpdateMessage>();
@@ -195,10 +196,9 @@ public class UpdateHandlerTest {
     }
 
     private void testOfflineUpdate(int port, String userID, ServerSecrets secrets) throws Exception {
+        String resource = "http://localhost/test";
         String response = "";
-        String resource = "/test";
-        String request = "http://localhost:" + port + WebServiceContext.UPDATE + WebServiceConstants.CONTEXT_SEPARATOR
-                + WebServiceConstants.USER_ID_KEY + WebServiceConstants.KEY_VALUE_SEPARATOR + userID;
+        String request = "http://localhost:" + port + WebServiceContext.UPDATE;
         List<String> messages = null;
         ShippingService shippingService = Mockito.mock(ShippingService.class);
         WebService service = new WebService(port, secrets, shippingService);

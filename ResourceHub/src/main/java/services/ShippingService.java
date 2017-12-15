@@ -15,10 +15,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import main.java.connection.IPAddressData;
 import main.java.connection.TCPConnection;
 import main.java.constants.LogFiles;
-import main.java.message.AddressMessage;
 import main.java.message.CacheMessage;
 import main.java.message.LogoutMessage;
 import main.java.message.UpdateMessage;
@@ -35,7 +33,6 @@ public class ShippingService extends CustomService {
     private Lock connectionLock;
     private Lock shippingPackageQueueLock;
     private Map<String, TCPConnection> connections;
-    private Map<String, IPAddressData> ipAddresses;
     private Queue<ShippingPackage> shippingPackageQueue;
 
     public ShippingService(ServerSecrets secrets) throws IOException {
@@ -46,7 +43,6 @@ public class ShippingService extends CustomService {
         connectionIterator = null;
         shippingPackageQueue = new LinkedList<ShippingPackage>();
         connections = new HashMap<String, TCPConnection>();
-        ipAddresses = new HashMap<String, IPAddressData>();
         connectionLock = new ReentrantLock();
         shippingPackageQueueLock = new ReentrantLock();
     }
@@ -63,14 +59,7 @@ public class ShippingService extends CustomService {
      */
     public void addConnection(String nickname, TCPConnection newConnection) {
         connectionLock.lock();
-
-        IPAddressData data = new IPAddressData();
-        data.setExternalAddress(newConnection.getInetAddress());
-        data.setExternalPort(newConnection.getRemotePort());
-
         connections.put(nickname, newConnection);
-        ipAddresses.put(nickname, data);
-
         connectionLock.unlock();
     }
 
@@ -87,39 +76,38 @@ public class ShippingService extends CustomService {
         }
     }
 
-    public IPAddressData getAddressData(String userID) {
-        return ipAddresses.get(userID);
-    }
-
     public String getResource(String resourceURI) {
         String resourceData = null;
         CacheMessage cacheMessage = new CacheMessage();
         List<String> cache = database.readCache(resourceURI);
-        int position = (int) (Math.random() * cache.size());
 
-        connectionLock.lock();
-        try {
-            cacheMessage.setData(null);
-            cacheMessage.setRequestMethod("GET");
-            cacheMessage.setResource(resourceURI);
-            while (!connections.get(cache.get(position)).isConnected()) {
-                position = (int) (Math.random() * cache.size());
-            }
-            connections.get(cache.get(position)).sendData(cacheMessage.getMessage());
+        if (cache.size() > 0) {
+            int position = (int) (Math.random() * cache.size());
 
-            do {
-                try {
-                    cacheMessage = CacheMessage.parse(connections.get(cache.get(position)).getData());
-                } catch (Exception e) {
-                    break;
+            connectionLock.lock();
+            try {
+                cacheMessage.setData(null);
+                cacheMessage.setRequestMethod("GET");
+                cacheMessage.setResource(resourceURI);
+                while (!connections.get(cache.get(position)).isConnected()) {
+                    position = (int) (Math.random() * cache.size());
                 }
-            } while (cacheMessage == null);
+                connections.get(cache.get(position)).sendData(cacheMessage.getMessage());
 
-            resourceData = cacheMessage.getData();
-        } catch (Exception e) {
+                do {
+                    try {
+                        cacheMessage = CacheMessage.parse(connections.get(cache.get(position)).getData());
+                    } catch (Exception e) {
+                        break;
+                    }
+                } while (cacheMessage == null);
 
+                resourceData = cacheMessage.getData();
+            } catch (Exception e) {
+
+            }
+            connectionLock.unlock();
         }
-        connectionLock.unlock();
 
         return resourceData;
     }
@@ -140,24 +128,6 @@ public class ShippingService extends CustomService {
         connectionLock.unlock();
 
         return wasSend;
-    }
-
-    public void updateAddressData(AddressMessage message) {
-        String userID = message.getUserID();
-        if (connections.get(userID) != null) {
-            if (message.getExternalAddress() != null) {
-                ipAddresses.get(userID).setExternalAddress(message.getExternalAddress());
-            }
-            if (message.getExternalPort() != -1) {
-                ipAddresses.get(userID).setExternalPort(message.getExternalPort());
-            }
-            if (message.getLocalAddress() != null) {
-                ipAddresses.get(userID).setLocalAddress(message.getLocalAddress());
-            }
-            if (message.getLocalPort() != -1) {
-                ipAddresses.get(userID).setLocalPort(message.getLocalPort());
-            }
-        }
     }
 
     @Override
@@ -196,15 +166,20 @@ public class ShippingService extends CustomService {
                     } catch (ClassNotFoundException cnfe) {
                         logger.writeLog("cannot parse incoming data to string datatype", cnfe);
                     }
-                } else if (!connections.get(key).isConnected()) {
-                    deleteConnection(key, connectionIterator);
+                } else {
+                    if (!connections.get(key).isConnected()) {
+                        deleteConnection(key, connectionIterator);
+                    }
                 }
             } catch (IOException ioe) {
                 deleteConnection(key, connectionIterator);
+                ioe.printStackTrace();
                 logger.writeLog("cannot read from inputstream", ioe);
             } catch (SQLException sqle) {
+                sqle.printStackTrace();
                 logger.writeLog("databse access error or closed result set", sqle);
             } catch (Exception e) {
+                e.printStackTrace();
                 logger.writeLog("unexpected exception" + System.lineSeparator(), e);
             }
         }
@@ -222,31 +197,30 @@ public class ShippingService extends CustomService {
 
         connectionLock.lock();
         if (packet != null) {
-            int temporaryStorage = 0;
-            String key = "";
-            List<Integer> alreadyUsedKeys = new ArrayList<Integer>(cacheSize);
+            List<String> store = database.readCache(packet.getResource());
             CacheMessage cacheMessage = new CacheMessage();
 
             cacheMessage.setData(packet.getData());
             cacheMessage.setRequestMethod("POST");
             cacheMessage.setResource(packet.getResource());
 
-            for (int i = 0; i < cacheSize; i++) {
-                temporaryStorage = (int) (Math.random() * connections.size());
-                key = (String) connections.keySet().toArray()[temporaryStorage];
-                while (!connections.get(key).isConnected() || alreadyUsedKeys.contains(temporaryStorage)) {
-                    temporaryStorage = (int) (Math.random() * connections.size());
-                    key = (String) connections.keySet().toArray()[temporaryStorage];
+            if (store.size() == 0) {
+                distributePackage(cacheSize, cacheMessage, null);
+            } else {
+                Iterator<String> iterator = store.iterator();
+                while (iterator.hasNext()) {
+                    String key = iterator.next();
+                    try {
+                        if (connections.get(key).isConnected()) {
+                            connections.get(key).sendData(cacheMessage.getMessage());
+                        } else {
+                            distributePackage(1, cacheMessage, store);
+                        }
+                    } catch (Exception e) {
+                        iterator.remove();
+                        distributePackage(1, cacheMessage, store);
+                    }
                 }
-
-                try {
-                    connections.get(key).sendData(cacheMessage.getMessage());
-                    database.insertCache(packet.getResource(), key);
-                } catch (Exception e) {
-                    i--;
-                }
-
-                alreadyUsedKeys.add(i, temporaryStorage);
             }
         }
         connectionLock.unlock();
@@ -268,6 +242,35 @@ public class ShippingService extends CustomService {
             iterator.remove();
         } catch (IOException ioe) {
             logger.writeLog("cannot delete connection", ioe);
+        }
+    }
+
+    private void distributePackage(int numberOfStores, CacheMessage message, List<String> usedKeys) {
+        int temporaryStorage = 0;
+        String key = "";
+        List<String> alreadyUsedKeys = null;
+        if (usedKeys == null) {
+            alreadyUsedKeys = new ArrayList<String>(numberOfStores);
+        } else {
+            alreadyUsedKeys = usedKeys;
+        }
+
+        for (int i = 0; i < numberOfStores; i++) {
+            temporaryStorage = (int) (Math.random() * connections.size());
+            key = (String) connections.keySet().toArray()[temporaryStorage];
+            while (!connections.get(key).isConnected() || alreadyUsedKeys.contains(key)) {
+                temporaryStorage = (int) (Math.random() * connections.size());
+                key = (String) connections.keySet().toArray()[temporaryStorage];
+            }
+
+            try {
+                connections.get(key).sendData(message.getMessage());
+                database.insertCache(message.getResource(), key);
+            } catch (Exception e) {
+                i--;
+            }
+
+            alreadyUsedKeys.add(i, key);
         }
     }
 }

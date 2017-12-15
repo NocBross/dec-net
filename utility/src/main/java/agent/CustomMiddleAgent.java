@@ -1,11 +1,11 @@
 package main.java.agent;
 
-import org.apache.jena.rdf.model.Model;
-
 import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
 import main.java.constants.AgentID;
+import main.java.message.Message;
+import main.java.message.RDFMessage;
 
 public class CustomMiddleAgent extends CustomAgent {
 
@@ -39,13 +39,13 @@ public class CustomMiddleAgent extends CustomAgent {
     }
 
     @Override
-    public void sendMessage(String destination, String resource, String message) {
-        parent.sendMessage(destination, resource, message);
+    public void sendMessage(String url, Message message) {
+        parent.sendMessage(url, message);
     }
 
     @Override
-    public void storeRDFModel(String resourcePath, Model rdfModel) {
-        parent.storeRDFModel(resourcePath, rdfModel);
+    public void storeRDFModel(RDFMessage message) {
+        parent.storeRDFModel(message);
     }
 
     @Override

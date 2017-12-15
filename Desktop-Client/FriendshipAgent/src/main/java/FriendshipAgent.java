@@ -11,14 +11,18 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
-import main.java.abstraction.UserProfile;
+import main.java.abstraction.Profiles;
 import main.java.agent.CustomAgent;
 import main.java.agent.CustomBottomAgent;
 import main.java.agent.RootController;
 import main.java.constants.AgentID;
+import main.java.constants.Network;
+import main.java.constants.WebServiceConstants;
+import main.java.constants.WebServiceContext;
 import main.java.controller.ResultDialogController;
 import main.java.controller.SearchDialogController;
-import main.java.rdf.ProfileRDF;
+import main.java.message.RDFMessage;
+import main.java.message.UpdateMessage;
 
 public class FriendshipAgent extends CustomBottomAgent {
 
@@ -64,9 +68,30 @@ public class FriendshipAgent extends CustomBottomAgent {
         toggleSearchDialogIsOpen();
     }
 
+    public void sendUpdate(String deletedFriend) {
+        String[] user = Profiles.getInstance().getActiveUser().split("@");
+        String resource = Network.NETWORK_PROTOCOL + user[1] + "/" + user[0] + WebServiceConstants.PROFILE_RESOURCE;
+        UpdateMessage updateMessage = new UpdateMessage();
+        List<String> friends = Profiles.getInstance().getFriends();
+
+        if (deletedFriend != null) {
+            friends.add(deletedFriend);
+        }
+
+        updateMessage.setResource(resource);
+        for (int i = 0; i < friends.size(); i++) {
+            String[] friend = friends.get(i).split("@");
+            String url = Network.NETWORK_PROTOCOL + friend[1] + WebServiceContext.UPDATE;
+            updateMessage.setUserID(friends.get(i));
+            sendMessage(url, updateMessage);
+        }
+    }
+
     public void storeRDFModel() {
-        String resourcePath = "/" + UserProfile.getInstance().getUserID() + "/profile";
-        parent.storeRDFModel(resourcePath, ProfileRDF.getInstance().getModel());
+        String[] user = Profiles.getInstance().getActiveUser().split("@");
+        String url = Network.NETWORK_PROTOCOL + user[1] + "/" + user[0] + WebServiceConstants.PROFILE_RESOURCE;
+        RDFMessage message = new RDFMessage(url, Profiles.getInstance().getModel());
+        parent.storeRDFModel(message);
     }
 
     public void showResultDialog(String headerText, List<String> resultList) {

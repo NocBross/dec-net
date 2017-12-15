@@ -38,23 +38,16 @@
 					<contextMenu>
 						<ContextMenu>
 							<items>
-								<MenuItem text="Profil ansehen" />
+								<MenuItem text="Posts ansehen" />
 								<MenuItem text="löschen" onAction="#onDeleteFriend" />
 							</items>
 						</ContextMenu>
 					</contextMenu>
 				</TitledPane>
-				<TitledPane fx:id="groupPane" text="Gruppen"
-					GridPane.columnIndex="0" GridPane.rowIndex="4">
-					<BorderPane>
-						<top>
-							<Button fx:id="addNewGroupButton" text="neue Gruppe hinzufügen" />
-						</top>
-						<center>
-							<ListView fx:id="groupList" />
-						</center>
-					</BorderPane>
-				</TitledPane>
+				<!-- <TitledPane fx:id="groupPane" text="Gruppen" GridPane.columnIndex="0" 
+					GridPane.rowIndex="4"> <BorderPane> <top> <Button fx:id="addNewGroupButton" 
+					text="neue Gruppe hinzufügen" /> </top> <center> <ListView fx:id="groupList" 
+					/> </center> </BorderPane> </TitledPane> -->
 			</children>
 			<columnConstraints>
 				<ColumnConstraints hgrow="SOMETIMES" percentWidth="100.0"

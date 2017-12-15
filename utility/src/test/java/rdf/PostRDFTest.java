@@ -1,8 +1,5 @@
 package test.java.rdf;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.junit.Assert;
@@ -39,15 +36,8 @@ public class PostRDFTest {
         Assert.assertEquals(reply1, replys.get(1));
 
         try {
-            String serializedModel = null;
-            ByteArrayOutputStream writer = new ByteArrayOutputStream();
-            post.getModel().write(writer);
-            serializedModel = new String(writer.toByteArray(), StandardCharsets.UTF_8);
-            writer.close();
-
-            ByteArrayInputStream reader = new ByteArrayInputStream(serializedModel.getBytes());
-            post.setModel(reader);
-            reader.close();
+            String serializedModel = post.getModel();
+            post.setModel(serializedModel);
 
             Assert.assertEquals(content, post.getContent());
             Assert.assertEquals(creator, post.getCreator());
@@ -56,7 +46,7 @@ public class PostRDFTest {
             Assert.assertEquals(2, replys.size());
             Assert.assertEquals(reply2, replys.get(0));
             Assert.assertEquals(reply1, replys.get(1));
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new AssertionError();
         }

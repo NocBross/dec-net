@@ -15,6 +15,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import main.java.message.RDFMessage;
 import main.java.services.ShippingService;
 import main.java.services.WebService;
 import main.java.util.ServerSecrets;
@@ -116,6 +117,7 @@ public class ResourceHandlerTest {
         String resource = "/test";
         String request = "http://localhost:" + port + resource;
         String data = "test_user";
+        RDFMessage message = new RDFMessage("http://localhost" + resource, data);
         ShippingService shippingService = Mockito.mock(ShippingService.class);
         WebService service = new WebService(port, secrets, shippingService);
 
@@ -134,7 +136,7 @@ public class ResourceHandlerTest {
 
         service.startService();
 
-        byte[] binaryMessage = data.getBytes(StandardCharsets.UTF_8);
+        byte[] binaryMessage = message.getMessage().getBytes(StandardCharsets.UTF_8);
         URL url = new URL(request);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoInput(true);
@@ -157,9 +159,9 @@ public class ResourceHandlerTest {
         }
         Assert.assertEquals("<b>OK</b>", response);
         Assert.assertEquals(1, dataSpy.size());
-        Assert.assertEquals(data, dataSpy.get(0));
+        Assert.assertEquals(message.getMessage(), dataSpy.get(0));
         Assert.assertEquals(1, resourceSpy.size());
-        Assert.assertEquals(resource, resourceSpy.get(0));
+        Assert.assertEquals(message.getResourceID(), resourceSpy.get(0));
 
         service.stopService();
         reader.close();

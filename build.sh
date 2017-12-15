@@ -20,3 +20,8 @@ cp -r ResourceHub/target/ResourceHub-*-with-dependencies.jar build/ResourceHub/
 cp -r ResourceHub/secrets/* build/ResourceHub/secrets/
 mv build/ResourceHub/ResourceHub-*-with-dependencies.jar build/ResourceHub/ResourceHub.jar
 chmod +x build/ResourceHub/ResourceHub.jar
+
+# copy DummyClient
+cp -r DummyClient/target/DummyClient-*-with-dependencies.jar build/ResourceHub/
+mv build/ResourceHub/DummyClient-*-with-dependencies.jar build/ResourceHub/DummyClient.jar
+chmod +x build/ResourceHub/DummyClient.jar

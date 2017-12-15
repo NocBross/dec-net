@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import main.java.message.RDFMessage;
 import main.java.services.ShippingService;
 
 public class ResourceHandler implements HttpHandler {
@@ -32,13 +33,12 @@ public class ResourceHandler implements HttpHandler {
     }
 
     private void handleGET(HttpExchange httpExchange) throws IOException {
-        int status = 400;
+        int status = 404;
         String response = shippingService.getResource(httpExchange.getRequestURI().toString());
 
         if (response != null) {
             status = 200;
         } else {
-            status = 404;
             response = "<b>NOT FOUND</b>";
         }
 
@@ -50,16 +50,23 @@ public class ResourceHandler implements HttpHandler {
     }
 
     private void handlePOST(HttpExchange httpExchange) throws IOException {
-        int status = 200;
+        int status = 400;
         String line = "";
-        String message = "";
-        String response = "<b>OK</b>";
+        String rawMessage = "";
+        String response = "<b>BAD REQUEST</b>";
         BufferedReader reader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
+        RDFMessage message = null;
 
         while ((line = reader.readLine()) != null) {
-            message += line;
+            rawMessage += line;
         }
-        shippingService.addShippingPackage(message, httpExchange.getRequestURI().toString());
+        message = RDFMessage.parse(rawMessage);
+
+        if (message != null) {
+            shippingService.addShippingPackage(message.getMessage(), message.getResourceID());
+            status = 200;
+            response = "<b>OK</b>";
+        }
 
         httpExchange.getResponseHeaders().add("Content-type", "text/html");
         httpExchange.sendResponseHeaders(status, response.length());
