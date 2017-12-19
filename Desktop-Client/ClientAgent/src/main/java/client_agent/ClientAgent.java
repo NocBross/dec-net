@@ -129,7 +129,7 @@ public class ClientAgent extends CustomAgent {
         boolean messageHasToSend = true;
 
         messageHasToSend = handleLoginMessage(message);
-        messageHasToSend = handleSendRDF(message);
+        messageHasToSend = handleSendRDF(url, message);
 
         if (messageHasToSend) {
             if (message != null) {
@@ -173,10 +173,6 @@ public class ClientAgent extends CustomAgent {
     @Override
     public void storeRDFModel(RDFMessage message) {
         resourceController.updateResource(message);
-        transmitController.addMessage(
-                message.getResourceID().replace(Network.LOCALHOST_ADDRESS,
-                        userModel.getResourceHubAddress() + ":" + Network.SERVER_WEBSERVICE_PORT),
-                message.getMessage());
     }
 
     /**
@@ -204,7 +200,6 @@ public class ClientAgent extends CustomAgent {
     private void handleCacheMessage(String message) {
         CacheMessage cacheMessage = CacheMessage.parse(message);
         if (cacheMessage != null) {
-            System.out.println(message);
             if (cacheMessage.getRequestMethod().equals("GET")) {
                 RDFMessage rdfMessage = resourceController.getResource(cacheMessage.getResource());
                 cacheMessage.setData(rdfMessage.getMessage());
@@ -234,6 +229,11 @@ public class ClientAgent extends CustomAgent {
                 RDFMessage rdfMessage = resourceController.getResource(url);
                 if (rdfMessage != null) {
                     updateMessage(rdfMessage.getMessage());
+                } else {
+                    url = Network.NETWORK_PROTOCOL + userModel.getResourceHubAddress() + ":"
+                            + Network.SERVER_WEBSERVICE_PORT + "/" + userModel.getNickname()
+                            + WebServiceConstants.PROFILE_RESOURCE;
+                    transmitController.addMessage(url, null);
                 }
             }
         }
@@ -279,7 +279,7 @@ public class ClientAgent extends CustomAgent {
      * @return returns true if the resource is not stored locally and the request
      *         has to send to the server, false otherwise
      */
-    private boolean handleSendRDF(Message message) {
+    private boolean handleSendRDF(String url, Message message) {
         if (message != null) {
             RDFMessage rdfMessage = RDFMessage.parse(message.getMessage());
             if (rdfMessage != null) {
@@ -288,6 +288,13 @@ public class ClientAgent extends CustomAgent {
                     updateMessage(storedModel.getMessage());
                     return false;
                 }
+            }
+        } else {
+            RDFMessage storedModel = resourceController.getResource(
+                    url.replace(Network.NETWORK_PROTOCOL, "").replace(":" + Network.SERVER_WEBSERVICE_PORT, ""));
+            if (storedModel != null) {
+                updateMessage(storedModel.getMessage());
+                return false;
             }
         }
 

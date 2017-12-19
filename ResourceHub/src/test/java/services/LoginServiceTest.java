@@ -199,7 +199,7 @@ public class LoginServiceTest {
             Assert.assertEquals(ServerStatusCodes.LOGIN_CORRECT, report.getStatusCode());
             Assert.assertEquals(LoginMessage.ID, report.getReferencedMessage());
 
-            Thread.sleep(500);
+            Thread.sleep(2000);
             List<String> messages = database.readUpdateMessages(TestData.NICKNAME);
             Assert.assertEquals(1, messages.size());
             Assert.assertEquals(message1.getMessage(), messages.get(0));

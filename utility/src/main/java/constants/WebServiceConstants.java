@@ -18,6 +18,11 @@ public class WebServiceConstants {
     public static final String KEY_VALUE_SEPARATOR = "=";
 
     /**
+     * Defines the name of the post resource.
+     */
+    public static final String POST_RESOURCE = "/post";
+
+    /**
      * Defines the name of the profile resource.
      */
     public static final String PROFILE_RESOURCE = "/profile";

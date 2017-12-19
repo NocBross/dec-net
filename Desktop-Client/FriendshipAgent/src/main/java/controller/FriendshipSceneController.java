@@ -11,6 +11,7 @@ import main.java.agent.CustomAgent;
 import main.java.agent.RootController;
 import main.java.constants.Network;
 import main.java.constants.WebServiceConstants;
+import main.java.message.PostMessage;
 import main.java.message.RDFMessage;
 import main.java.message.SearchMessage;
 import main.java.message.UserIDMessage;
@@ -35,6 +36,7 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
     @Override
     public void receiveResult(String message) {
         handleUserIDMessage(message);
+        handlePostMessage(message);
         handleRDFMessage(message);
         handleSearchMessage(message);
     }
@@ -81,6 +83,17 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         }
     }
 
+    private void handlePostMessage(String message) {
+        PostMessage postMessage = PostMessage.parse(message);
+        if (postMessage != null) {
+            if (postMessage.getUpdateProfile()) {
+                profiles.addPost(postMessage.getPosts().get(0));
+                agent.storeRDFModel();
+                agent.sendUpdate(null);
+            }
+        }
+    }
+
     private void handleRDFMessage(String message) {
         RDFMessage rdfMessage = RDFMessage.parse(message);
         if (rdfMessage != null) {
@@ -94,6 +107,13 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
 
                 String userID = splittetURL[addressIndex] + "@" + splittetURL[addressIndex - 1];
                 profiles.setModel(userID, rdfMessage.getModel());
+
+                if (userID.equals(profiles.getActiveUser())) {
+                    PostMessage postMessage = new PostMessage();
+                    postMessage.setPostList(profiles.getPosts());
+                    postMessage.setUpdateProfile(false);
+                    agent.scatterMessage(postMessage.getMessage());
+                }
             }
         }
     }

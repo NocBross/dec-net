@@ -89,8 +89,12 @@ public class FriendshipAgent extends CustomBottomAgent {
 
     public void storeRDFModel() {
         String[] user = Profiles.getInstance().getActiveUser().split("@");
-        String url = Network.NETWORK_PROTOCOL + user[1] + "/" + user[0] + WebServiceConstants.PROFILE_RESOURCE;
-        RDFMessage message = new RDFMessage(url, Profiles.getInstance().getModel());
+        String url = Network.NETWORK_PROTOCOL + user[1] + ":" + Network.SERVER_WEBSERVICE_PORT + "/" + user[0]
+                + WebServiceConstants.PROFILE_RESOURCE;
+        RDFMessage message = new RDFMessage(user[1] + "/" + user[0] + WebServiceConstants.PROFILE_RESOURCE,
+                Profiles.getInstance().getModel());
+
+        parent.sendMessage(url, message);
         parent.storeRDFModel(message);
     }
 

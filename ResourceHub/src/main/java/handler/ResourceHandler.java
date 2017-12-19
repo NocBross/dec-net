@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import main.java.constants.Network;
 import main.java.message.RDFMessage;
 import main.java.services.ShippingService;
 
@@ -34,7 +35,9 @@ public class ResourceHandler implements HttpHandler {
 
     private void handleGET(HttpExchange httpExchange) throws IOException {
         int status = 404;
-        String response = shippingService.getResource(httpExchange.getRequestURI().toString());
+        String url = httpExchange.getRequestHeaders().getFirst("Host") + httpExchange.getRequestURI().toString();
+        url = url.replace(":" + Network.SERVER_WEBSERVICE_PORT, "");
+        String response = shippingService.getResource(url);
 
         if (response != null) {
             status = 200;
@@ -63,7 +66,8 @@ public class ResourceHandler implements HttpHandler {
         message = RDFMessage.parse(rawMessage);
 
         if (message != null) {
-            shippingService.addShippingPackage(message.getMessage(), message.getResourceID());
+            shippingService.addShippingPackage(message.getMessage(),
+                    message.getResourceID().replace(String.valueOf(Network.SERVER_WEBSERVICE_PORT), ""));
             status = 200;
             response = "<b>OK</b>";
         }

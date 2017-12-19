@@ -1,8 +1,5 @@
 package main.java.controller;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import main.java.PinboardAgent;
@@ -10,8 +7,10 @@ import main.java.abstraction.PinboardSceneComponents;
 import main.java.abstraction.Posts;
 import main.java.agent.CustomAgent;
 import main.java.agent.RootController;
-import main.java.constants.PostConstants;
+import main.java.constants.Network;
+import main.java.constants.WebServiceConstants;
 import main.java.message.PostMessage;
+import main.java.message.RDFMessage;
 import main.java.message.UserIDMessage;
 
 public class PinboardSceneController extends PinboardSceneComponents implements RootController {
@@ -25,20 +24,12 @@ public class PinboardSceneController extends PinboardSceneComponents implements 
         posts = Posts.getInstance();
         postListView.setItems(posts.getPostList());
         postListView.prefHeightProperty().bind(scrollPane.heightProperty());
-
-        int numberOfPosts = 20;
-        String postPrefix = "http://localhost/user/post/" + PostConstants.POST_PREFIX;
-        List<String> postList = new LinkedList<String>();
-        for (int i = 0; i < numberOfPosts; i++) {
-            postList.add(postPrefix + (20 - i));
-        }
-        postList.add(postPrefix + "-1");
-        posts.addPosts(postList);
     }
 
     @Override
     public void receiveResult(String message) {
         handlePostMessage(message);
+        handleRDFMessage(message);
         handleUserIDMessage(message);
     }
 
@@ -55,7 +46,25 @@ public class PinboardSceneController extends PinboardSceneComponents implements 
     private void handlePostMessage(String message) {
         PostMessage postMessage = PostMessage.parse(message);
         if (postMessage != null) {
-            posts.addPosts(postMessage.getPosts());
+            if (!postMessage.getUpdateProfile()) {
+                posts.setPostMap(postMessage.getPosts());
+                for (int i = 0; i < postMessage.getPosts().size(); i++) {
+                    String[] splittedURL = postMessage.getPosts().get(i).replace(Network.NETWORK_PROTOCOL, "")
+                            .split("/");
+                    String url = Network.NETWORK_PROTOCOL + splittedURL[0] + ":" + Network.SERVER_WEBSERVICE_PORT + "/"
+                            + splittedURL[1] + "/" + splittedURL[2] + "/" + splittedURL[3];
+                    agent.sendMessage(url, null);
+                }
+            }
+        }
+    }
+
+    private void handleRDFMessage(String message) {
+        RDFMessage rdfMessage = RDFMessage.parse(message);
+        if (rdfMessage != null) {
+            if (rdfMessage.getResourceID().indexOf(WebServiceConstants.POST_RESOURCE) != -1) {
+                posts.addPost(Network.NETWORK_PROTOCOL + rdfMessage.getResourceID(), rdfMessage.getModel());
+            }
         }
     }
 

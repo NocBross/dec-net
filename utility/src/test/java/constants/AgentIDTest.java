@@ -5,11 +5,11 @@ import org.junit.Test;
 
 import main.java.constants.AgentID;
 
-public class LTAgentIDTest {
+public class AgentIDTest {
 
     @Test
     public void test() {
-        Assert.assertEquals(6, AgentID.values().length);
+        Assert.assertEquals(7, AgentID.values().length);
     }
 
 }

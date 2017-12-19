@@ -10,6 +10,11 @@ public class PostSortController {
         return Integer.valueOf(post.substring(post.lastIndexOf(PostConstants.POST_NUMBER_SEPARATOR) + 1));
     }
 
+    /**
+     * Sorts the entries in the list in descending order.
+     * 
+     * @param postList
+     */
     public static void sort(List<String> postList) {
         int tempID = -1;
         String temp = null;
@@ -18,7 +23,7 @@ public class PostSortController {
             tempID = getPostID(temp);
             int j = i;
             while (j > 0 && getPostID(postList.get(j - 1)) < tempID) {
-                postList.add(j, postList.get(j - 1));
+                postList.set(j, postList.get(j - 1));
                 j--;
             }
             postList.set(j, temp);
