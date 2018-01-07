@@ -1,6 +1,5 @@
 package main.java.services;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import com.sun.net.httpserver.HttpServer;
@@ -16,7 +15,7 @@ public class WebService {
 
     private HttpServer server;
 
-    public WebService(int port, ServerSecrets secrets, ShippingService shippingService) throws IOException {
+    public WebService(int port, ServerSecrets secrets, ShippingService shippingService) throws Exception {
         server = HttpServer.create(new InetSocketAddress(port), 0);
 
         server.createContext(WebServiceContext.REGISTER, new RegisterHandler(secrets));

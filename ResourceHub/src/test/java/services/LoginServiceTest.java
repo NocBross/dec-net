@@ -31,6 +31,14 @@ public class LoginServiceTest {
     @Test
     public void test() {
         try {
+            File log = new File(LogFiles.LOGIN_LOG);
+            if (log.getParentFile().exists()) {
+                for (File file : log.getParentFile().listFiles()) {
+                    file.delete();
+                }
+                log.getParentFile().delete();
+            }
+
             ServerSecrets secrets = new ServerSecrets();
             secrets.loadServerSecrets();
 
@@ -38,6 +46,14 @@ public class LoginServiceTest {
             testExceptions(secrets);
             testNotRegisteredUser(secrets);
             testRegisteredUser(secrets);
+
+            // clean up
+            if (log.getParentFile().exists()) {
+                for (File file : log.getParentFile().listFiles()) {
+                    file.delete();
+                }
+                log.getParentFile().delete();
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new AssertionError();
@@ -66,6 +82,8 @@ public class LoginServiceTest {
             File logFile = new File(LogFiles.LOGIN_LOG);
             BufferedReader reader = new BufferedReader(new FileReader(logFile));
             String line = reader.readLine();
+            Assert.assertNotEquals(-1, line.indexOf("LoginService new connection accepted with 127.0.0.1"));
+            line = reader.readLine();
             Assert.assertNotEquals(-1, line.indexOf("something is wrong with the streams or the incoming message"));
             line = reader.readLine();
             Assert.assertEquals("java.io.EOFException", line);
@@ -77,7 +95,11 @@ public class LoginServiceTest {
             // clean up
             loginService.stopService();
             reader.close();
-            logFile.delete();
+            File log = new File(LogFiles.LOGIN_LOG);
+            for (File file : log.getParentFile().listFiles()) {
+                file.delete();
+            }
+            log.getParentFile().delete();
             loginService.join();
             Assert.assertFalse(loginService.isAlive());
         } catch (Exception e) {
@@ -117,6 +139,11 @@ public class LoginServiceTest {
             // clean up
             loginService.stopService();
             connection.close();
+            File log = new File(LogFiles.LOGIN_LOG);
+            for (File file : log.getParentFile().listFiles()) {
+                file.delete();
+            }
+            log.getParentFile().delete();
             loginService.join();
             Assert.assertFalse(loginService.isAlive());
         } catch (Exception e) {
@@ -207,6 +234,11 @@ public class LoginServiceTest {
             // clean up
             loginService.stopService();
             connection.close();
+            File log = new File(LogFiles.LOGIN_LOG);
+            for (File file : log.getParentFile().listFiles()) {
+                file.delete();
+            }
+            log.getParentFile().delete();
             database.deleteUser(TestData.NICKNAME);
             loginService.join();
             Assert.assertFalse(loginService.isAlive());

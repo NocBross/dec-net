@@ -2,6 +2,7 @@ package test.java.handler;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -15,6 +16,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import main.java.constants.LogFiles;
 import main.java.constants.Network;
 import main.java.message.RDFMessage;
 import main.java.services.ShippingService;
@@ -34,12 +36,18 @@ public class ResourceHandlerTest {
             testNotExistingResource(port, secrets);
             testExistingResource(port, secrets);
             testPOSTResource(port, secrets);
-        } catch(Exception e) {
+
+            // clean up
+            File log = new File(LogFiles.RESOURCE_LOG);
+            for (File file : log.getParentFile().listFiles()) {
+                Assert.assertTrue(file.delete());
+            }
+            Assert.assertTrue(log.getParentFile().delete());
+        } catch (Exception e) {
             e.printStackTrace();
             throw new AssertionError();
         }
     }
-
 
     private void testNotExistingResource(int port, ServerSecrets secrets) throws Exception {
         String response = "";
@@ -66,7 +74,7 @@ public class ResourceHandlerTest {
         connection.setRequestMethod("GET");
         Assert.assertEquals(404, connection.getResponseCode());
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
-        for(String line; (line = reader.readLine()) != null;) {
+        for (String line; (line = reader.readLine()) != null;) {
             response += line;
         }
         Assert.assertEquals("<b>NOT FOUND</b>", response);
@@ -76,7 +84,6 @@ public class ResourceHandlerTest {
         service.stopService();
         reader.close();
     }
-
 
     private void testExistingResource(int port, ServerSecrets secrets) throws Exception {
         String response = "";
@@ -104,7 +111,7 @@ public class ResourceHandlerTest {
         connection.setRequestMethod("GET");
         Assert.assertEquals(200, connection.getResponseCode());
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        for(String line; (line = reader.readLine()) != null;) {
+        for (String line; (line = reader.readLine()) != null;) {
             response += line;
         }
         Assert.assertEquals(data, response);
@@ -114,7 +121,6 @@ public class ResourceHandlerTest {
         service.stopService();
         reader.close();
     }
-
 
     private void testPOSTResource(int port, ServerSecrets secrets) throws Exception {
         String response = "";
@@ -158,7 +164,7 @@ public class ResourceHandlerTest {
 
         Assert.assertEquals(200, connection.getResponseCode());
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        for(String line; (line = reader.readLine()) != null;) {
+        for (String line; (line = reader.readLine()) != null;) {
             response += line;
         }
         Assert.assertEquals("<b>OK</b>", response);

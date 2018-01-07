@@ -14,8 +14,8 @@ public class CustomServiceTest {
 
         private int serviceCallCounter;
 
-        public TestService(int port, String pathToLogFile) throws Exception {
-            super(port, pathToLogFile);
+        public TestService(int port, String pathToLogFile, String logID) throws Exception {
+            super(port, pathToLogFile, logID);
             serviceCallCounter = 0;
         }
 
@@ -34,8 +34,11 @@ public class CustomServiceTest {
     public void test() {
         try {
             String logFile = "logs/testlog.txt";
-            testWithPort(logFile);
-            testWithoutPort(logFile);
+            String logID = "CustomService";
+
+            testWithPort(logFile, logID);
+            testWithoutPort(logFile, logID);
+
             new File(logFile).delete();
             new File(logFile).getParentFile().delete();
         } catch (Exception e) {
@@ -44,10 +47,10 @@ public class CustomServiceTest {
         }
     }
 
-    private void testWithPort(String logFilePath) throws Exception {
+    private void testWithPort(String logFilePath, String logID) throws Exception {
         int port = 20000;
         ServerSocket socket = null;
-        TestService service = new TestService(port, logFilePath);
+        TestService service = new TestService(port, logFilePath, logID);
 
         try {
             socket = new ServerSocket(port);
@@ -65,10 +68,10 @@ public class CustomServiceTest {
         Assert.assertTrue(service.getServiceCallCounter() > 0);
     }
 
-    private void testWithoutPort(String logFilePath) throws Exception {
+    private void testWithoutPort(String logFilePath, String logID) throws Exception {
         int port = -1;
         ServerSocket socket = null;
-        TestService service = new TestService(port, logFilePath);
+        TestService service = new TestService(port, logFilePath, logID);
 
         try {
             socket = new ServerSocket(port);

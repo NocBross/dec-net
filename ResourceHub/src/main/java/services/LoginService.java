@@ -20,7 +20,7 @@ public class LoginService extends CustomService {
     private ShippingService shippingService;
 
     public LoginService(int port, ServerSecrets secrets, ShippingService shippingService) throws IOException {
-        super(port, LogFiles.LOGIN_LOG);
+        super(port, LogFiles.LOGIN_LOG, "LoginService");
         database = new DatabaseConnector(secrets.getDatabaseUser(), secrets.getDatabasePassword());
         this.shippingService = shippingService;
     }
@@ -32,6 +32,7 @@ public class LoginService extends CustomService {
 
         try {
             clientConnection = new TCPConnection(socket.accept());
+            logger.writeLog(logID + " new connection accepted with " + clientConnection.getInetAddress(), null);
 
             do {
                 message = LoginMessage.parse(clientConnection.getData());
@@ -42,18 +43,24 @@ public class LoginService extends CustomService {
             ReportMessage report = new ReportMessage();
             report.setReferencedMessage(message.getType());
             if (database.loginQuery(userID, password)) {
+                logger.writeLog(logID + " correct login data from " + clientConnection.getInetAddress(), null);
                 report.setResult(true);
                 report.setStatusCode(ServerStatusCodes.LOGIN_CORRECT);
             } else {
+                logger.writeLog(logID + " incorrect login data from " + clientConnection.getInetAddress(), null);
                 report.setResult(false);
                 report.setStatusCode(ServerStatusCodes.LOGIN_UNKNOWN_USER_ID);
             }
 
+            logger.writeLog(logID + " sending report to " + clientConnection.getInetAddress(), null);
             clientConnection.sendData(report.getMessage());
             if (report.getResult()) {
+                logger.writeLog(logID + " transfer connection to AhippingService", null);
                 shippingService.addConnection(userID, clientConnection);
+                logger.writeLog(logID + " sending UpdateMessages to " + clientConnection.getInetAddress(), null);
                 sendUpdateMessages(userID);
             } else {
+                logger.writeLog(logID + " close connection to " + clientConnection.getInetAddress(), null);
                 clientConnection.close();
             }
         } catch (SocketTimeoutException ste) {

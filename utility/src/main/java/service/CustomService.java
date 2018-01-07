@@ -7,13 +7,14 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class CustomService extends Thread {
 
+    protected String logID;
     protected Lock controlLock;
     protected ServerSocket socket;
     protected CustomLogger logger;
     protected boolean run;
     protected final int KILL_TIME_IN_SECONDS;
 
-    public CustomService(int port, String absolutePathToLogFile) throws IOException {
+    public CustomService(int port, String absolutePathToLogFile, String logID) throws IOException {
         KILL_TIME_IN_SECONDS = 10;
 
         if (port != -1) {
@@ -23,6 +24,7 @@ public abstract class CustomService extends Thread {
             socket = null;
         }
 
+        this.logID = logID;
         logger = new CustomLogger(absolutePathToLogFile);
 
         controlLock = new ReentrantLock();
@@ -46,7 +48,7 @@ public abstract class CustomService extends Thread {
                 socket.close();
             }
         } catch (IOException ioe) {
-            logger.writeLog("error by closing the socket", ioe);
+            logger.writeLog(logID + " error by closing the socket", ioe);
         }
     }
 

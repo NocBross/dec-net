@@ -1,6 +1,7 @@
 package test.java.handler;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -9,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import main.java.constants.LogFiles;
 import main.java.constants.Network;
 import main.java.constants.WebServiceConstants;
 import main.java.constants.WebServiceContext;
@@ -32,6 +34,13 @@ public class SearchHandlerTest {
             testWrongKey(port, secrets);
             testNotExistingUser(port, secrets);
             testExistingUser(port, secrets);
+
+            // clean up
+            File log = new File(LogFiles.SEARCH_LOG);
+            for (File file : log.getParentFile().listFiles()) {
+                Assert.assertTrue(file.delete());
+            }
+            Assert.assertTrue(log.getParentFile().delete());
         } catch (Exception e) {
             e.printStackTrace();
             throw new AssertionError();

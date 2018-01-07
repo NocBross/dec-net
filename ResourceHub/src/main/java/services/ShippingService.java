@@ -36,7 +36,7 @@ public class ShippingService extends CustomService {
     private Queue<ShippingPackage> shippingPackageQueue;
 
     public ShippingService(ServerSecrets secrets) throws IOException {
-        super(-1, LogFiles.SHIPPING_LOG);
+        super(-1, LogFiles.SHIPPING_LOG, "ShippingService");
 
         cacheSize = 3;
         database = new DatabaseConnector(secrets.getDatabaseUser(), secrets.getDatabasePassword());
@@ -58,6 +58,7 @@ public class ShippingService extends CustomService {
      *         false in case of the user is already connected
      */
     public void addConnection(String nickname, TCPConnection newConnection) {
+        logger.writeLog(logID + " add new client connection (" + newConnection.getInetAddress() + ")", null);
         connectionLock.lock();
         connections.put(nickname, newConnection);
         connectionLock.unlock();
@@ -66,6 +67,7 @@ public class ShippingService extends CustomService {
     public void addShippingPackage(String data, String resourceURI) {
         if (data != null) {
             try {
+                logger.writeLog(logID + " adding new ShippingPackage for resource " + resourceURI, null);
                 ShippingPackage packet = new ShippingPackage(data, "POST", resourceURI);
 
                 shippingPackageQueueLock.lock();
@@ -77,6 +79,8 @@ public class ShippingService extends CustomService {
     }
 
     public String getResource(String resourceURI) {
+        logger.writeLog(logID + " reading resource " + resourceURI, null);
+
         String resourceData = null;
         CacheMessage cacheMessage = new CacheMessage();
         List<String> cache = database.readCache(resourceURI);
@@ -92,10 +96,13 @@ public class ShippingService extends CustomService {
                 while (!connections.get(cache.get(position)).isConnected()) {
                     position = (int) (Math.random() * cache.size());
                 }
+                logger.writeLog(logID + " inform client to send " + resourceURI + " back", null);
                 connections.get(cache.get(position)).sendData(cacheMessage.getMessage());
 
                 do {
                     try {
+                        logger.writeLog(logID + " receiving resource (" + resourceURI + ") from client ("
+                                + connections.get(cache.get(position)).getInetAddress() + ")", null);
                         cacheMessage = CacheMessage.parse(connections.get(cache.get(position)).getData());
                     } catch (Exception e) {
                         break;
@@ -109,6 +116,7 @@ public class ShippingService extends CustomService {
             connectionLock.unlock();
         }
 
+        logger.writeLog(logID + " return resource content for " + resourceURI, null);
         return resourceData;
     }
 
@@ -119,9 +127,11 @@ public class ShippingService extends CustomService {
         TCPConnection connection = connections.get(userID);
         if (connection != null && connection.isConnected()) {
             try {
+                logger.writeLog(logID + " sending UpdateMessage to " + userID, null);
                 connection.sendData(message.getMessage());
                 wasSend = true;
             } catch (Exception e) {
+                logger.writeLog(logID + " error while sending UpdateMessage to " + userID, e);
             }
         }
 
@@ -139,6 +149,7 @@ public class ShippingService extends CustomService {
     private void checkConnectedClients() {
         connectionLock.lock();
         connectionIterator = connections.keySet().iterator();
+        logger.writeLog(logID + " checking connected clients for new data", null);
         while (connectionIterator.hasNext()) {
             String key = connectionIterator.next();
             try {
@@ -152,6 +163,10 @@ public class ShippingService extends CustomService {
                         if (!message.equals("1")) {
                             JSONTokener parser = new JSONTokener(message);
                             JSONObject jsonMessage = (JSONObject) parser.nextValue();
+
+                            logger.writeLog(
+                                    logID + " received message " + jsonMessage.getString("type") + " from " + key,
+                                    null);
 
                             switch (jsonMessage.getString("type")) {
                                 case LogoutMessage.ID:
@@ -187,6 +202,7 @@ public class ShippingService extends CustomService {
     }
 
     private void checkShippingPackages() {
+        logger.writeLog(logID + " checking ShippingPackage queue", null);
         ShippingPackage packet = null;
 
         shippingPackageQueueLock.lock();
@@ -197,6 +213,7 @@ public class ShippingService extends CustomService {
 
         connectionLock.lock();
         if (packet != null) {
+            logger.writeLog(logID + " distributing package", null);
             List<String> store = database.readCache(packet.getResource());
             CacheMessage cacheMessage = new CacheMessage();
 
@@ -207,16 +224,20 @@ public class ShippingService extends CustomService {
             if (store.size() == 0) {
                 distributePackage(cacheSize, cacheMessage, null);
             } else {
+                logger.writeLog(logID + " updating cached messages", null);
                 Iterator<String> iterator = store.iterator();
                 while (iterator.hasNext()) {
                     String key = iterator.next();
                     try {
                         if (connections.get(key).isConnected()) {
+                            logger.writeLog(logID + " updating message which is cached by user " + key, null);
                             connections.get(key).sendData(cacheMessage.getMessage());
                         } else {
+                            logger.writeLog(logID + " user offline select new user for caching", null);
                             distributePackage(1, cacheMessage, store);
                         }
                     } catch (Exception e) {
+                        logger.writeLog(logID + " user offline select new user for caching", null);
                         iterator.remove();
                         distributePackage(1, cacheMessage, store);
                     }
@@ -238,6 +259,7 @@ public class ShippingService extends CustomService {
      */
     private void deleteConnection(String key, Iterator<String> iterator) {
         try {
+            logger.writeLog(logID + " user " + key + " going offline. Removing the connection", null);
             connections.get(key).close();
             iterator.remove();
         } catch (IOException ioe) {
@@ -264,6 +286,9 @@ public class ShippingService extends CustomService {
             }
 
             try {
+                logger.writeLog(
+                        logID + " sending resource " + message.getResource() + " to user " + key + " for caching",
+                        null);
                 connections.get(key).sendData(message.getMessage());
                 database.insertCache(message.getResource(), key);
             } catch (Exception e) {

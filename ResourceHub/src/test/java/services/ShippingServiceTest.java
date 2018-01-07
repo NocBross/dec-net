@@ -1,5 +1,6 @@
 package test.java.services;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.Collections;
@@ -9,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import main.java.connection.TCPConnection;
+import main.java.constants.LogFiles;
 import main.java.message.CacheMessage;
 import main.java.message.LogoutMessage;
 import main.java.message.UpdateMessage;
@@ -74,6 +76,11 @@ public class ShippingServiceTest {
                 Assert.assertEquals(0, database.readCache(resource).size());
                 database.closeConnection();
                 socket.close();
+                File log = new File(LogFiles.SHIPPING_LOG);
+                for (File file : log.getParentFile().listFiles()) {
+                    Assert.assertTrue(file.delete());
+                }
+                Assert.assertTrue(log.getParentFile().delete());
                 service.stopService();
                 service.join();
             } catch (Exception e) {

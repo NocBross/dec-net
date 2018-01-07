@@ -2,6 +2,7 @@ package test.java.handler;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -10,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import org.junit.Assert;
 import org.junit.Test;
 
+import main.java.constants.LogFiles;
 import main.java.constants.ServerStatusCodes;
 import main.java.constants.WebServiceContext;
 import main.java.message.LoginMessage;
@@ -38,6 +40,11 @@ public class RegisterHandlerTest {
 
             // clean up
             database.deleteUser(userID);
+            File log = new File(LogFiles.REGISTER_LOG);
+            for (File file : log.getParentFile().listFiles()) {
+                Assert.assertTrue(file.delete());
+            }
+            Assert.assertTrue(log.getParentFile().delete());
         } catch (Exception e) {
             e.printStackTrace();
             throw new AssertionError();
