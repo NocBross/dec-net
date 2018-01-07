@@ -9,18 +9,25 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import main.java.client_agent.ClientAgent;
+import main.java.service.CustomLogger;
 
 public class HttpController extends Thread {
 
+    private CustomLogger logger;
     private ClientAgent agent;
+    private String logID;
     private String message;
     private String urlString;
 
-    public HttpController(ClientAgent agent, String url, String message) {
+
+    public HttpController(ClientAgent agent, String url, String message, CustomLogger logger) {
         this.agent = agent;
+        logID = "HttpController";
         this.message = message;
         this.urlString = url;
+        this.logger = logger;
     }
+
 
     @Override
     public void run() {
@@ -30,9 +37,11 @@ public class HttpController extends Thread {
             URL url = new URL(urlString);
             connection = (HttpURLConnection) url.openConnection();
 
-            if (message == null) {
+            if(message == null) {
+                logger.writeLog(logID + " sending GET-Request for " + urlString, null);
                 connection.setRequestMethod("GET");
             } else {
+                logger.writeLog(logID + " sending POST_Request for " + urlString, null);
                 byte[] binaryMessage = message.getBytes(StandardCharsets.UTF_8);
 
                 connection.setDoInput(true);
@@ -49,25 +58,25 @@ public class HttpController extends Thread {
                 dataWriter.close();
             }
 
-            if (connection.getResponseCode() == 200) {
+            if(connection.getResponseCode() == 200) {
                 reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                for (String line; (line = reader.readLine()) != null;) {
+                for(String line; (line = reader.readLine()) != null;) {
                     agent.updateMessage(line);
                 }
                 reader.close();
             }
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
+        } catch(IOException ioe) {
+            logger.writeLog(logID + " error while sending", ioe);
         } finally {
-            if (reader != null) {
+            if(reader != null) {
                 try {
                     reader.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch(Exception e) {
+                    logger.writeLog(logID + " cannot close reader", e);
                 }
             }
 
-            if (connection != null) {
+            if(connection != null) {
                 connection.disconnect();
             }
         }

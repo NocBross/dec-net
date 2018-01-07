@@ -7,6 +7,7 @@ import main.java.constants.Network;
 import main.java.message.LoginMessage;
 import main.java.message.ReportMessage;
 import main.java.message.UserIDMessage;
+import main.java.service.CustomLogger;
 
 /**
  * The LoginRequestController generates the LoginMessage and handles the
@@ -18,35 +19,48 @@ import main.java.message.UserIDMessage;
 
 public class LoginRequestController implements RequestController {
 
+    private String logID;
     private CustomAgent agent;
     private LoginData data;
     private LoginValidationController validationController;
+    private CustomLogger logger;
+
 
     public LoginRequestController(LoginData data) {
+        logID = "LoginRequestController";
         agent = null;
         this.data = data;
+        logger = null;
         validationController = new LoginValidationController(data);
     }
+
+
+    public void setLogger(CustomLogger newLogger) {
+        logger = newLogger;
+    }
+
 
     /**
      * Checks if the given message is the result for the request.
      * 
      * @param message
-     *            - incoming result message
+     *        - incoming result message
      * @return 0, in case of success<br>
      *         1, in case of the incoming message was not a result<br>
      *         2, in case of wrong mail of password
      */
     @Override
     public int receiveResult(String message) {
+        logger.writeLog(logID + " received message " + message, null);
         ReportMessage answer = ReportMessage.parse(message);
 
-        if (answer != null && answer.getReferencedMessage().equals(LoginMessage.ID)) {
+        if(answer != null && answer.getReferencedMessage().equals(LoginMessage.ID)) {
             return answer.getStatusCode();
         }
 
         return 1;
     }
+
 
     /**
      * Validates the data by using the ValidationController, generates the
@@ -57,7 +71,8 @@ public class LoginRequestController implements RequestController {
      */
     @Override
     public int sendRequest() {
-        if (!validationController.validateNickname() || !validationController.validatePassword()) {
+        logger.writeLog(logID + " sending login request", null);
+        if( !validationController.validateNickname() || !validationController.validatePassword()) {
             return 1;
         }
 
@@ -72,11 +87,12 @@ public class LoginRequestController implements RequestController {
         return 0;
     }
 
+
     /**
      * Sets a new agent to the controller.
      * 
      * @param newAgent
-     *            - new agent of the controller
+     *        - new agent of the controller
      */
     @Override
     public void setAgent(CustomAgent newAgent) {

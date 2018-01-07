@@ -12,28 +12,50 @@ import main.java.constants.Network;
 import main.java.message.PostMessage;
 import main.java.message.RDFMessage;
 import main.java.rdf.PostRDF;
+import main.java.service.CustomLogger;
 
 public class NewPostDialogController extends NewPostDialogComponents {
 
+    private String logID;
     private PinboardAgent agent;
+    private CustomLogger logger;
+
+
+    @FXML
+    public void initialize() {
+        logID = "NewPostDialogController";
+        agent = null;
+    }
+
 
     public void close() {
+        logger.writeLog(logID + " closing dialog", null);
         agent.closeNewPostDialog();
         postTextArea.setText("");
     }
+
 
     public void setAgent(PinboardAgent newAgent) {
         agent = newAgent;
     }
 
+
+    public void setLogger(CustomLogger newLogger) {
+        logger = newLogger;
+    }
+
+
     @FXML
     protected void cancelButtonAction(ActionEvent event) {
+        logger.writeLog(logID + " cancel button clicked", null);
         close();
     }
 
+
     @FXML
     protected void postButtonAction(ActionEvent event) {
-        if (!postTextArea.getText().equals("")) {
+        logger.writeLog(logID + " post button clicked", null);
+        if( !postTextArea.getText().equals("")) {
             String postURL = Posts.getInstance().addNewPost(postTextArea.getText());
             generatePostRDF(postURL, postTextArea.getText());
 
@@ -46,6 +68,7 @@ public class NewPostDialogController extends NewPostDialogComponents {
         }
         close();
     }
+
 
     private void generatePostRDF(String postID, String content) {
         PostRDF postModel = new PostRDF();

@@ -12,29 +12,32 @@ public class CustomLogger {
     private File logFile;
     private PrintWriter writer;
 
+
     public CustomLogger(String absolutePathToLogFile) throws IOException {
         logFile = new File(absolutePathToLogFile);
 
-        if (!logFile.getParentFile().exists()) {
+        if( !logFile.getParentFile().exists()) {
             logFile.getParentFile().mkdir();
         }
 
-        if (!logFile.exists()) {
+        if( !logFile.exists()) {
             logFile.createNewFile();
         }
 
         writer = new PrintWriter(new FileOutputStream(logFile, true));
     }
 
+
     public void close() throws IOException {
         writer.close();
     }
 
+
     public synchronized void writeLog(String logMessage, Exception e) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
         writer.write("[" + dateFormat.format(new Date()) + "] " + logMessage + System.lineSeparator());
-        if (e != null) {
+        if(e != null) {
             e.printStackTrace(writer);
         }
         writer.flush();

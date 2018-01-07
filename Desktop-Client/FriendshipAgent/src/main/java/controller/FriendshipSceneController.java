@@ -15,14 +15,19 @@ import main.java.message.PostMessage;
 import main.java.message.RDFMessage;
 import main.java.message.SearchMessage;
 import main.java.message.UserIDMessage;
+import main.java.service.CustomLogger;
 
 public class FriendshipSceneController extends FriendshipSceneComponents implements RootController {
 
+    private String logID;
     private FriendshipAgent agent;
     private Profiles profiles;
+    private CustomLogger logger;
+
 
     @FXML
     public void initialize() {
+        logID = "FriendshipSceneController";
         agent = null;
         profiles = Profiles.getInstance();
 
@@ -30,63 +35,82 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         friendPane.setExpanded(true);
         // groupPane.setVisible(false);
 
-        scrollPane.setVvalue(-0.05);
+        scrollPane.setVvalue( -0.05);
     }
+
 
     @Override
     public void receiveResult(String message) {
+        logger.writeLog(logID + " received message " + message, null);
         handleUserIDMessage(message);
         handlePostMessage(message);
         handleRDFMessage(message);
         handleSearchMessage(message);
     }
 
+
     @Override
     public void setAgent(CustomAgent newAgent) {
-        if (newAgent instanceof FriendshipAgent) {
+        if(newAgent instanceof FriendshipAgent) {
             agent = (FriendshipAgent) newAgent;
         }
     }
+
+
+    @Override
+    public void setLogger(CustomLogger newlogger) {
+        logger = newlogger;
+    }
+
 
     /**
      * Opens the search dialog with friend parameters.
      * 
      * @param event
-     *            - button clicked
+     *        - button clicked
      */
     @FXML
     protected void newFriendButtonAction(ActionEvent event) {
+        logger.writeLog(logID + " new friend button clicked", null);
         profiles.setSearchType(SearchType.FRIEND);
         agent.showSearchDialog("neuen Freund hinzufügen");
     }
 
+
     @FXML
     protected void onDeleteFriend(ActionEvent event) {
+        logger.writeLog(logID + " on delete friend clicked", null);
         String nickname = friendList.getSelectionModel().getSelectedItem();
         profiles.deleteFriend(nickname);
         agent.storeRDFModel();
         agent.sendUpdate(nickname);
     }
 
+
     @FXML
     protected void openFriendListContext(MouseEvent event) {
-        if (event.isPopupTrigger()) {
+        if(event.isPopupTrigger()) {
+            logger.writeLog(logID + " open friend list context menu", null);
             friendPane.getContextMenu().show(friendPane, event.getX(), event.getY());
         }
     }
 
+
     private void handleUserIDMessage(String message) {
         UserIDMessage userIDMessage = UserIDMessage.parse(message);
-        if (userIDMessage != null) {
+        if(userIDMessage != null) {
+            logger.writeLog(logID + " processing " + userIDMessage.getType(), null);
             profiles.setActiveUser(userIDMessage.getUserID());
             friendList.setItems(profiles.getObservableFriends());
         }
     }
 
+
     private void handlePostMessage(String message) {
         PostMessage postMessage = PostMessage.parse(message);
-        if (postMessage != null) {
-            if (postMessage.getUpdateProfile()) {
+        if(postMessage != null) {
+            logger.writeLog(logID + " processing " + postMessage.getType(), null);
+            if(postMessage.getUpdateProfile()) {
                 profiles.addPost(postMessage.getPosts().get(0));
                 agent.storeRDFModel();
                 agent.sendUpdate(null);
@@ -94,21 +118,23 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         }
     }
 
+
     private void handleRDFMessage(String message) {
         RDFMessage rdfMessage = RDFMessage.parse(message);
-        if (rdfMessage != null) {
-            if (rdfMessage.getResourceID().indexOf(WebServiceConstants.PROFILE_RESOURCE) != -1) {
+        if(rdfMessage != null) {
+            logger.writeLog(logID + " processing " + rdfMessage.getType(), null);
+            if(rdfMessage.getResourceID().indexOf(WebServiceConstants.PROFILE_RESOURCE) != -1) {
                 int addressIndex = 1;
                 String[] splittetURL = rdfMessage.getResourceID().replace(Network.NETWORK_PROTOCOL, "").split("/");
 
-                if (splittetURL[0] == null || splittetURL[0].equals("")) {
-                    addressIndex++;
+                if(splittetURL[0] == null || splittetURL[0].equals("")) {
+                    addressIndex++ ;
                 }
 
                 String userID = splittetURL[addressIndex] + "@" + splittetURL[addressIndex - 1];
                 profiles.setModel(userID, rdfMessage.getModel());
 
-                if (userID.equals(profiles.getActiveUser())) {
+                if(userID.equals(profiles.getActiveUser())) {
                     PostMessage postMessage = new PostMessage();
                     postMessage.setPostList(profiles.getPosts());
                     postMessage.setUpdateProfile(false);
@@ -118,11 +144,13 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
         }
     }
 
+
     private void handleSearchMessage(String message) {
-        SearchMessage resultMessage = SearchMessage.parse(message);
-        if (resultMessage != null) {
+        SearchMessage searchMessage = SearchMessage.parse(message);
+        if(searchMessage != null) {
+            logger.writeLog(logID + " processing " + searchMessage.getType(), null);
             String header = "";
-            switch (profiles.getSearchType()) {
+            switch(profiles.getSearchType()) {
                 case DIRECT_MESSAGE:
                 case FRIEND:
                     header = "Gefundene Personen:";
@@ -132,7 +160,7 @@ public class FriendshipSceneController extends FriendshipSceneComponents impleme
                 default:
                     break;
             }
-            agent.showResultDialog(header, resultMessage.getNicknames());
+            agent.showResultDialog(header, searchMessage.getNicknames());
         }
     }
 

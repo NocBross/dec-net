@@ -13,6 +13,7 @@ import main.java.agent.CustomAgent;
 import main.java.agent.CustomBottomAgent;
 import main.java.agent.RootController;
 import main.java.constants.AgentID;
+import main.java.constants.ClientLogs;
 import main.java.controller.NewPostDialogController;
 
 public class PinboardAgent extends CustomBottomAgent {
@@ -21,8 +22,9 @@ public class PinboardAgent extends CustomBottomAgent {
     private Stage newPostDialogStage;
     private NewPostDialogController newPostDialogController;
 
-    public PinboardAgent(CustomAgent parent) {
-        super(parent, AgentID.PINBOARD_AGENT);
+
+    public PinboardAgent(CustomAgent parent) throws Exception {
+        super(parent, AgentID.PINBOARD_AGENT, ClientLogs.PINBOARD_AGENT, "PinboardAgent");
         newPostDialogIsOpen = false;
 
         try {
@@ -30,27 +32,32 @@ public class PinboardAgent extends CustomBottomAgent {
             rootSceneNode = loader.load();
             agentSceneController = (RootController) loader.getController();
             agentSceneController.setAgent(this);
+            agentSceneController.setLogger(logger);
 
             loader = new FXMLLoader(getClass().getResource("/ui/NewPostDialog.fxml"));
             createNewPostDialog(loader.load());
             newPostDialogController = (NewPostDialogController) loader.getController();
             newPostDialogController.setAgent(this);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
+            newPostDialogController.setLogger(logger);
+        } catch(IOException ioe) {
+            logger.writeLog(logID + " error while loading PinboardAgent", ioe);
         }
     }
+
 
     public void closeNewPostDialog() {
         newPostDialogStage.close();
         toggleNewPostDialogIsOpen();
     }
 
+
     public void showNewPostDialog() {
-        if (!newPostDialogIsOpen) {
+        if( !newPostDialogIsOpen) {
             newPostDialogStage.show();
             toggleNewPostDialogIsOpen();
         }
     }
+
 
     private void createNewPostDialog(Parent newPostDialog) {
         newPostDialogStage = new Stage();
@@ -67,6 +74,7 @@ public class PinboardAgent extends CustomBottomAgent {
 
         });
     }
+
 
     private void toggleNewPostDialogIsOpen() {
         newPostDialogIsOpen = !newPostDialogIsOpen;

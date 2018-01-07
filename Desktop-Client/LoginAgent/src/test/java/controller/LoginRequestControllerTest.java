@@ -1,5 +1,6 @@
 package test.java.controller;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,63 +19,77 @@ import main.java.controller.LoginRequestController;
 import main.java.message.LoginMessage;
 import main.java.message.RegisterMessage;
 import main.java.message.ReportMessage;
+import main.java.service.CustomLogger;
 
 public class LoginRequestControllerTest {
 
     @Test
     public void test() {
-        CustomBottomAgent agent = Mockito.mock(CustomBottomAgent.class);
-        LoginData data = new LoginData();
-        LoginRequestController requestController = new LoginRequestController(data);
-        requestController.setAgent(agent);
-        StringProperty mail = new SimpleStringProperty();
-        StringProperty password = new SimpleStringProperty();
+        try {
+            String path = "logs/log.txt";
+            CustomLogger logger = new CustomLogger(path);
 
-        // mocking methods of CustomButtomAgent
-        String messageInfo = "new message is send";
-        List<String> spyMessageList = Mockito.spy(new LinkedList<String>());
-        Mockito.doAnswer(new Answer<Object>() {
+            CustomBottomAgent agent = Mockito.mock(CustomBottomAgent.class);
+            LoginData data = new LoginData();
+            LoginRequestController requestController = new LoginRequestController(data);
+            requestController.setAgent(agent);
+            requestController.setLogger(logger);
+            StringProperty mail = new SimpleStringProperty();
+            StringProperty password = new SimpleStringProperty();
 
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                spyMessageList.add(messageInfo);
-                return null;
-            }
+            // mocking methods of CustomButtomAgent
+            String messageInfo = "new message is send";
+            List<String> spyMessageList = Mockito.spy(new LinkedList<String>());
+            Mockito.doAnswer(new Answer<Object>() {
 
-        }).when(agent).sendMessage(Mockito.anyString(), Mockito.any());
+                @Override
+                public Object answer(InvocationOnMock invocation) throws Throwable {
+                    spyMessageList.add(messageInfo);
+                    return null;
+                }
 
-        // initialize test
-        data.getNicknameProperty().bind(mail);
-        data.getPasswordProperty().bind(password);
+            }).when(agent).sendMessage(Mockito.anyString(), Mockito.any());
 
-        // test receiveResult method
-        LoginMessage loginMessage = new LoginMessage();
-        Assert.assertEquals(1, requestController.receiveResult(loginMessage.getMessage()));
-        ReportMessage registerReport = new ReportMessage();
-        registerReport.setReferencedMessage(RegisterMessage.ID);
-        Assert.assertEquals(1, requestController.receiveResult(registerReport.getMessage()));
-        ReportMessage errorReport = new ReportMessage();
-        errorReport.setReferencedMessage(LoginMessage.ID);
-        errorReport.setResult(false);
-        errorReport.setStatusCode(5);
-        Assert.assertEquals(5, requestController.receiveResult(errorReport.getMessage()));
-        ReportMessage report = new ReportMessage();
-        report.setReferencedMessage(LoginMessage.ID);
-        report.setResult(true);
-        report.setStatusCode(ServerStatusCodes.LOGIN_CORRECT);
-        Assert.assertEquals(ServerStatusCodes.LOGIN_CORRECT, requestController.receiveResult(report.getMessage()));
+            // initialize test
+            data.getNicknameProperty().bind(mail);
+            data.getPasswordProperty().bind(password);
 
-        // test sendRequest method
-        mail.set("");
-        password.set("");
-        Assert.assertEquals(1, requestController.sendRequest());
-        mail.set("test@mail.de");
-        Assert.assertEquals(1, requestController.sendRequest());
-        mail.set("");
-        password.set("Uh_90!er45.");
-        Assert.assertEquals(1, requestController.sendRequest());
-        mail.set("test@mail.de");
-        Assert.assertEquals(0, requestController.sendRequest());
-        Assert.assertEquals(1, spyMessageList.size());
+            // test receiveResult method
+            LoginMessage loginMessage = new LoginMessage();
+            Assert.assertEquals(1, requestController.receiveResult(loginMessage.getMessage()));
+            ReportMessage registerReport = new ReportMessage();
+            registerReport.setReferencedMessage(RegisterMessage.ID);
+            Assert.assertEquals(1, requestController.receiveResult(registerReport.getMessage()));
+            ReportMessage errorReport = new ReportMessage();
+            errorReport.setReferencedMessage(LoginMessage.ID);
+            errorReport.setResult(false);
+            errorReport.setStatusCode(5);
+            Assert.assertEquals(5, requestController.receiveResult(errorReport.getMessage()));
+            ReportMessage report = new ReportMessage();
+            report.setReferencedMessage(LoginMessage.ID);
+            report.setResult(true);
+            report.setStatusCode(ServerStatusCodes.LOGIN_CORRECT);
+            Assert.assertEquals(ServerStatusCodes.LOGIN_CORRECT, requestController.receiveResult(report.getMessage()));
+
+            // test sendRequest method
+            mail.set("");
+            password.set("");
+            Assert.assertEquals(1, requestController.sendRequest());
+            mail.set("test@mail.de");
+            Assert.assertEquals(1, requestController.sendRequest());
+            mail.set("");
+            password.set("Uh_90!er45.");
+            Assert.assertEquals(1, requestController.sendRequest());
+            mail.set("test@mail.de");
+            Assert.assertEquals(0, requestController.sendRequest());
+            Assert.assertEquals(1, spyMessageList.size());
+
+            // clean up
+            logger.close();
+            new File(path).delete();
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw new AssertionError();
+        }
     }
 }

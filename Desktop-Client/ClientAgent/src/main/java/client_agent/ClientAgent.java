@@ -21,6 +21,7 @@ import main.java.client_agent.controller.ReceiveController;
 import main.java.client_agent.controller.ResourceController;
 import main.java.client_agent.controller.TransmitController;
 import main.java.constants.AgentID;
+import main.java.constants.ClientLogs;
 import main.java.constants.Network;
 import main.java.constants.WebServiceConstants;
 import main.java.message.CacheMessage;
@@ -54,8 +55,9 @@ public class ClientAgent extends CustomAgent {
     private ResourceController resourceController;
     private TransmitController transmitController;
 
+
     public ClientAgent(Stage primaryStage) throws Exception {
-        super(null, AgentID.CLIENT_AGENT);
+        super(null, AgentID.CLIENT_AGENT, ClientLogs.CLIENT_AGENT, "ClientAgent");
         this.primaryStage = primaryStage;
 
         addChild(new AuthenticationAgent(this, primaryStage));
@@ -69,7 +71,7 @@ public class ClientAgent extends CustomAgent {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 messageLock.lock();
-                if (newValue != null) {
+                if(newValue != null) {
                     receiveMessage(newValue);
                 }
                 messageLock.unlock();
@@ -80,7 +82,10 @@ public class ClientAgent extends CustomAgent {
         createModels();
         createController();
         startController();
+
+        logger.writeLog("client startet", null);
     }
+
 
     public void close() {
         try {
@@ -95,20 +100,25 @@ public class ClientAgent extends CustomAgent {
 
             transmitController.join();
             receiveController.join();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch(Exception e) {
+            logger.writeLog(logID + " error while closeing client", e);
         }
 
+        logger.writeLog(logID + " client closed", null);
         System.exit(0);
     }
+
 
     @Override
     public Parent getScene() {
         return activeAgent.getScene();
     }
 
+
     @Override
     public void receiveMessage(String message) {
+        logger.writeLog(logID + " received " + message, null);
+
         handleCacheMessage(message);
         handleReceiveRDF(message);
         handleReportMessage(message);
@@ -117,22 +127,26 @@ public class ClientAgent extends CustomAgent {
         newMessage.set(null);
     }
 
+
     @Override
     public void scatterMessage(String message) {
-        for (int i = 0; i < children.size(); i++) {
+        logger.writeLog(logID + " scattering " + message, null);
+        for(int i = 0; i < children.size(); i++ ) {
             children.get(i).receiveMessage(message);
         }
     }
 
+
     @Override
     public void sendMessage(String url, Message message) {
+        logger.writeLog(logID + " sending " + message, null);
         boolean messageHasToSend = true;
 
         messageHasToSend = handleLoginMessage(message);
         messageHasToSend = handleSendRDF(url, message);
 
-        if (messageHasToSend) {
-            if (message != null) {
+        if(messageHasToSend) {
+            if(message != null) {
                 transmitController.addMessage(url, message.getMessage());
             } else {
                 transmitController.addMessage(url, null);
@@ -140,14 +154,16 @@ public class ClientAgent extends CustomAgent {
         }
     }
 
+
     @Override
     public void switchAgent(AgentID destinationAgent) {
+        logger.writeLog(logID + " switching agent to " + destinationAgent.toString(), null);
         Platform.runLater(new Runnable() {
 
             @Override
             public void run() {
-                for (int i = 0; i < children.size(); i++) {
-                    if (children.get(i).getID() == destinationAgent) {
+                for(int i = 0; i < children.size(); i++ ) {
+                    if(children.get(i).getID() == destinationAgent) {
                         primaryStage.getScene().setRoot(children.get(i).getScene());
                         activeAgent = children.get(i);
                         break;
@@ -158,22 +174,27 @@ public class ClientAgent extends CustomAgent {
         });
     }
 
+
     /**
      * Changes the message in the string property.
      * 
      * @param newMessage
-     *            - new received message
+     *        - new received message
      */
     public void updateMessage(String newMessage) {
+        logger.writeLog(logID + " getting new message " + newMessage, null);
         messageLock.lock();
         this.newMessage.setValue(newMessage);
         messageLock.unlock();
     }
 
+
     @Override
     public void storeRDFModel(RDFMessage message) {
+        logger.writeLog(logID + " storing " + message.getType(), null);
         resourceController.updateResource(message);
     }
+
 
     /**
      * Creates instances of all necessary controllers for the client agent.
@@ -181,10 +202,11 @@ public class ClientAgent extends CustomAgent {
      * @throws Exception
      */
     private void createController() throws Exception {
-        receiveController = new ReceiveController(connectionModel, this);
-        resourceController = new ResourceController("context");
-        transmitController = new TransmitController(this, connectionModel, transmitModel);
+        receiveController = new ReceiveController(connectionModel, this, logger);
+        resourceController = new ResourceController("context", logger);
+        transmitController = new TransmitController(this, connectionModel, transmitModel, logger);
     }
+
 
     /**
      * Creates instances of all necessary models for the client agent.
@@ -192,15 +214,17 @@ public class ClientAgent extends CustomAgent {
      * @throws UnknownHostException
      */
     private void createModels() throws Exception {
-        connectionModel = new ConnectionModel();
+        connectionModel = new ConnectionModel(logger);
         userModel = new UserModel();
         transmitModel = new TransmitModel();
     }
 
+
     private void handleCacheMessage(String message) {
         CacheMessage cacheMessage = CacheMessage.parse(message);
-        if (cacheMessage != null) {
-            if (cacheMessage.getRequestMethod().equals("GET")) {
+        if(cacheMessage != null) {
+            logger.writeLog(logID + " processing " + cacheMessage.getType(), null);
+            if(cacheMessage.getRequestMethod().equals("GET")) {
                 RDFMessage rdfMessage = resourceController.getResource(cacheMessage.getResource());
                 cacheMessage.setData(rdfMessage.getMessage());
                 transmitController.addMessage(Network.NETWORK_HUB, cacheMessage.getMessage());
@@ -210,24 +234,26 @@ public class ClientAgent extends CustomAgent {
         }
     }
 
+
     /**
-     * Stored the mail address and password from an outgoing login message in the
-     * local model.
+     * Stored the mail address and password from an outgoing login message in
+     * the local model.
      * 
      * @param message
-     *            - login message
+     *        - login message
      */
     private boolean handleLoginMessage(Message message) {
-        if (message != null) {
+        if(message != null) {
             LoginMessage loginMessage = LoginMessage.parse(message.getMessage());
-            if (loginMessage != null) {
+            if(loginMessage != null) {
+                logger.writeLog(logID + " processing " + loginMessage.getType(), null);
                 userModel.setUserID(loginMessage.getNickname());
                 userModel.setPassword(loginMessage.getPassword());
 
                 String url = "/" + userModel.getResourceHubAddress() + "/" + userModel.getNickname()
                         + WebServiceConstants.PROFILE_RESOURCE;
                 RDFMessage rdfMessage = resourceController.getResource(url);
-                if (rdfMessage != null) {
+                if(rdfMessage != null) {
                     updateMessage(rdfMessage.getMessage());
                 } else {
                     url = Network.NETWORK_PROTOCOL + userModel.getResourceHubAddress() + ":"
@@ -241,58 +267,64 @@ public class ClientAgent extends CustomAgent {
         return true;
     }
 
+
     /**
-     * Handles an incoming rdf message if the given message is a serialized version
-     * of a rdf message.<br>
+     * Handles an incoming rdf message if the given message is a serialized
+     * version of a rdf message.<br>
      * This method will store the model which is send by this message locally.
      * 
      * @param message
-     *            - incoming message
+     *        - incoming message
      */
     private void handleReceiveRDF(String message) {
         RDFMessage rdfMessage = RDFMessage.parse(message);
-        if (rdfMessage != null) {
+        if(rdfMessage != null) {
+            logger.writeLog(logID + " processing " + rdfMessage.getType(), null);
             resourceController.updateResource(rdfMessage);
         }
     }
+
 
     /**
      * Handles an incoming report message.
      * 
      * @param message
-     *            - report message
+     *        - report message
      */
     private void handleReportMessage(String message) {
         ReportMessage reportMessage = ReportMessage.parse(message);
-        if (reportMessage != null) {
-            if (reportMessage.getReferencedMessage().equals(LoginMessage.ID) && !reportMessage.getResult()) {
+        if(reportMessage != null) {
+            logger.writeLog(logID + " processing " + reportMessage.getType(), null);
+            if(reportMessage.getReferencedMessage().equals(LoginMessage.ID) && !reportMessage.getResult()) {
                 connectionModel.deleteServerConnection();
             }
         }
     }
 
+
     /**
      * Checks if the requested resource in the RDFMessage is stored locally.
      * 
      * @param message
-     *            - outgoing rdf message
-     * @return returns true if the resource is not stored locally and the request
-     *         has to send to the server, false otherwise
+     *        - outgoing rdf message
+     * @return returns true if the resource is not stored locally and the
+     *         request has to send to the server, false otherwise
      */
     private boolean handleSendRDF(String url, Message message) {
-        if (message != null) {
+        logger.writeLog(logID + " processing outgoing rdf", null);
+        if(message != null) {
             RDFMessage rdfMessage = RDFMessage.parse(message.getMessage());
-            if (rdfMessage != null) {
+            if(rdfMessage != null) {
                 RDFMessage storedModel = resourceController.getResource(rdfMessage.getResourceID());
-                if (storedModel != null) {
+                if(storedModel != null) {
                     updateMessage(storedModel.getMessage());
                     return false;
                 }
             }
         } else {
-            RDFMessage storedModel = resourceController.getResource(
-                    url.replace(Network.NETWORK_PROTOCOL, "").replace(":" + Network.SERVER_WEBSERVICE_PORT, ""));
-            if (storedModel != null) {
+            RDFMessage storedModel = resourceController.getResource(url.replace(Network.NETWORK_PROTOCOL, "").replace(
+                    ":" + Network.SERVER_WEBSERVICE_PORT, ""));
+            if(storedModel != null) {
                 updateMessage(storedModel.getMessage());
                 return false;
             }
@@ -300,6 +332,7 @@ public class ClientAgent extends CustomAgent {
 
         return true;
     }
+
 
     /**
      * Starts all necessary controllers.

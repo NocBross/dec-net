@@ -29,7 +29,7 @@ public class CustomLoggerTest {
             testLogger.writeLog(testMessage, null);
             line = reader.readLine();
             String date = line.substring(1, line.indexOf(" "));
-            String time = line.substring(line.indexOf(" ") + 1, line.lastIndexOf("]"));
+            String time = line.substring(line.indexOf(" ") + 1, line.lastIndexOf(":"));
             String message = line.substring(line.lastIndexOf("]") + 2);
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
@@ -48,8 +48,8 @@ public class CustomLoggerTest {
             testLogger.writeLog(testMessage, new IOException());
             reader = new BufferedReader(new FileReader(testFile));
             int lines = 0;
-            while (reader.readLine() != null) {
-                lines++;
+            while(reader.readLine() != null) {
+                lines++ ;
             }
             Assert.assertEquals(27, lines);
 
@@ -61,7 +61,7 @@ public class CustomLoggerTest {
 
                 public void run() {
                     long dead = System.currentTimeMillis() + seconds * 1000;
-                    while (System.currentTimeMillis() <= dead) {
+                    while(System.currentTimeMillis() <= dead) {
                         logger.writeLog("Thread-1", null);
                     }
                 }
@@ -70,7 +70,7 @@ public class CustomLoggerTest {
 
                 public void run() {
                     long dead = System.currentTimeMillis() + seconds * 1000;
-                    while (System.currentTimeMillis() <= dead) {
+                    while(System.currentTimeMillis() <= dead) {
                         logger.writeLog("Thread-2", null);
                     }
                 }
@@ -82,10 +82,10 @@ public class CustomLoggerTest {
             reader.close();
             reader = new BufferedReader(new FileReader(testFile));
             dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-            while ((line = reader.readLine()) != null) {
-                Assert.assertNotNull(dateFormat.parse(line.substring(1, line.lastIndexOf("]"))));
+            while((line = reader.readLine()) != null) {
+                Assert.assertNotNull(dateFormat.parse(line.substring(1, line.lastIndexOf(":"))));
                 Assert.assertEquals("Thread", line.substring(line.lastIndexOf("]") + 2, line.lastIndexOf("-")));
-                Assert.assertEquals(27, line.length());
+                Assert.assertEquals(30, line.length());
             }
 
             // clean up
@@ -94,7 +94,7 @@ public class CustomLoggerTest {
             logger.close();
             testFile.delete();
             testFile.getParentFile().delete();
-        } catch (Exception e) {
+        } catch(Exception e) {
             e.printStackTrace();
             throw new AssertionError();
         }

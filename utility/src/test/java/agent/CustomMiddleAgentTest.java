@@ -1,5 +1,6 @@
 package test.java.agent;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,26 +22,41 @@ public class CustomMiddleAgentTest {
 
     private class TestAgent extends CustomMiddleAgent {
 
-        public TestAgent(CustomAgent parent, AgentID ID, Stage primaryStage) {
-            super(parent, ID, primaryStage);
+        public TestAgent(CustomAgent parent, AgentID ID, Stage primaryStage, String logFilePath, String logID)
+                throws Exception {
+            super(parent, ID, primaryStage, logFilePath, logID);
             addChild(child);
             activeAgent = child;
         }
 
     }
 
+
     @Test
     public void test() {
-        testWithChildren();
-        testWithoutChildren();
+        try {
+            String logID = "CustomMiddleAgent";
+            String path = "log/log.txt";
+
+            testWithChildren(path, logID);
+            testWithoutChildren(path, logID);
+
+            File log = new File(path);
+            log.delete();
+            log.getParentFile().delete();
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw new AssertionError();
+        }
     }
 
-    private void testWithChildren() {
+
+    private void testWithChildren(String path, String logID) throws Exception {
         String url = "http://localhost/test";
         String model = "some model";
         CustomAgent parent = Mockito.mock(CustomAgent.class);
         child = Mockito.mock(CustomAgent.class);
-        CustomMiddleAgent agent = new TestAgent(parent, AgentID.AUTHENTICATION_AGENT, null);
+        CustomMiddleAgent agent = new TestAgent(parent, AgentID.AUTHENTICATION_AGENT, null, path, logID);
         RDFMessage rdfMessage = new RDFMessage(url, model);
 
         List<Integer> sceneSpy = new LinkedList<Integer>();
@@ -116,13 +132,14 @@ public class CustomMiddleAgentTest {
         try {
             agent.switchAgent(AgentID.LOGIN_AGENT);
             throw new AssertionError();
-        } catch (Exception e) {
+        } catch(Exception e) {
 
         }
     }
 
-    private void testWithoutChildren() {
-        CustomMiddleAgent agent = new TestAgent(null, AgentID.AUTHENTICATION_AGENT, null);
+
+    private void testWithoutChildren(String path, String logID) throws Exception {
+        CustomMiddleAgent agent = new TestAgent(null, AgentID.AUTHENTICATION_AGENT, null, path, logID);
         Assert.assertNull(agent.getScene());
     }
 

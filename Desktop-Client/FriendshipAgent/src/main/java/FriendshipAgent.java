@@ -16,6 +16,7 @@ import main.java.agent.CustomAgent;
 import main.java.agent.CustomBottomAgent;
 import main.java.agent.RootController;
 import main.java.constants.AgentID;
+import main.java.constants.ClientLogs;
 import main.java.constants.Network;
 import main.java.constants.WebServiceConstants;
 import main.java.constants.WebServiceContext;
@@ -33,8 +34,9 @@ public class FriendshipAgent extends CustomBottomAgent {
     private ResultDialogController resultDialogController;
     private SearchDialogController searchDialogController;
 
-    public FriendshipAgent(CustomAgent parent) {
-        super(parent, AgentID.FRIENDSHIP_AGENT);
+
+    public FriendshipAgent(CustomAgent parent) throws Exception {
+        super(parent, AgentID.FRIENDSHIP_AGENT, ClientLogs.FRIENDSHIP_AGENT, "FriendshipAgent");
         resultDialogIsOpen = false;
         searchDialogIsOpen = false;
 
@@ -43,30 +45,36 @@ public class FriendshipAgent extends CustomBottomAgent {
             rootSceneNode = loader.load();
             agentSceneController = (RootController) loader.getController();
             agentSceneController.setAgent(this);
+            agentSceneController.setLogger(logger);
 
             loader = new FXMLLoader(getClass().getResource("/ui/SearchDialog.fxml"));
             createSearchDialog(loader.load());
             searchDialogController = (SearchDialogController) loader.getController();
             searchDialogController.setAgent(this);
+            searchDialogController.setLogger(logger);
 
             loader = new FXMLLoader(getClass().getResource("/ui/ResultDialog.fxml"));
             createResultDialog(loader.load());
             resultDialogController = (ResultDialogController) loader.getController();
             resultDialogController.setAgent(this);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
+            resultDialogController.setLogger(logger);
+        } catch(IOException ioe) {
+            logger.writeLog(logID + " error while loading friendship scenes", ioe);
         }
     }
+
 
     public void closeResultDialog() {
         resultDialogStage.close();
         toggleResultDialogIsOpen();
     }
 
+
     public void closeSearchDialog() {
         searchDialogStage.close();
         toggleSearchDialogIsOpen();
     }
+
 
     public void sendUpdate(String deletedFriend) {
         String[] user = Profiles.getInstance().getActiveUser().split("@");
@@ -74,12 +82,12 @@ public class FriendshipAgent extends CustomBottomAgent {
         UpdateMessage updateMessage = new UpdateMessage();
         List<String> friends = Profiles.getInstance().getFriends();
 
-        if (deletedFriend != null) {
+        if(deletedFriend != null) {
             friends.add(deletedFriend);
         }
 
         updateMessage.setResource(resource);
-        for (int i = 0; i < friends.size(); i++) {
+        for(int i = 0; i < friends.size(); i++ ) {
             String[] friend = friends.get(i).split("@");
             String url = Network.NETWORK_PROTOCOL + friend[1] + WebServiceContext.UPDATE;
             updateMessage.setUserID(friends.get(i));
@@ -87,20 +95,23 @@ public class FriendshipAgent extends CustomBottomAgent {
         }
     }
 
+
     public void storeRDFModel() {
+        logger.writeLog(logID + " storing rdf", null);
         String[] user = Profiles.getInstance().getActiveUser().split("@");
         String url = Network.NETWORK_PROTOCOL + user[1] + ":" + Network.SERVER_WEBSERVICE_PORT + "/" + user[0]
                 + WebServiceConstants.PROFILE_RESOURCE;
-        RDFMessage message = new RDFMessage(user[1] + "/" + user[0] + WebServiceConstants.PROFILE_RESOURCE,
-                Profiles.getInstance().getModel());
+        RDFMessage message = new RDFMessage(user[1] + "/" + user[0] + WebServiceConstants.PROFILE_RESOURCE, Profiles
+                .getInstance().getModel());
 
         parent.sendMessage(url, message);
         parent.storeRDFModel(message);
     }
 
+
     public void showResultDialog(String headerText, List<String> resultList) {
         try {
-            if (!resultDialogIsOpen) {
+            if( !resultDialogIsOpen) {
                 resultDialogController.setHeader(headerText);
                 resultDialogController.setResults(resultList);
                 Platform.runLater(new Runnable() {
@@ -113,18 +124,20 @@ public class FriendshipAgent extends CustomBottomAgent {
 
                 });
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch(Exception e) {
+            logger.writeLog(logID + " error while showing ResultDialog", e);
         }
     }
 
+
     public void showSearchDialog(String headerText) {
-        if (!searchDialogIsOpen) {
+        if( !searchDialogIsOpen) {
             searchDialogController.setHeader(headerText);
             searchDialogStage.show();
             toggleSearchDialogIsOpen();
         }
     }
+
 
     private void createResultDialog(Parent resultDialog) {
         resultDialogStage = new Stage();
@@ -142,6 +155,7 @@ public class FriendshipAgent extends CustomBottomAgent {
         });
     }
 
+
     private void createSearchDialog(Parent searchDialog) {
         searchDialogStage = new Stage();
         searchDialogStage.initStyle(StageStyle.UTILITY);
@@ -158,9 +172,11 @@ public class FriendshipAgent extends CustomBottomAgent {
         });
     }
 
+
     private void toggleResultDialogIsOpen() {
         resultDialogIsOpen = !resultDialogIsOpen;
     }
+
 
     private void toggleSearchDialogIsOpen() {
         searchDialogIsOpen = !searchDialogIsOpen;

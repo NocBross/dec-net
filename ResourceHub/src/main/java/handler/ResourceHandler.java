@@ -16,30 +16,34 @@ public class ResourceHandler implements HttpHandler {
 
     private ShippingService shippingService;
 
+
     public ResourceHandler(ShippingService shippingService) {
         this.shippingService = shippingService;
     }
+
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         String requestMethod = httpExchange.getRequestMethod();
 
-        if (requestMethod.equals("GET")) {
+        if(requestMethod.equals("GET")) {
             handleGET(httpExchange);
-        } else if (requestMethod.equals("POST")) {
+        } else if(requestMethod.equals("POST")) {
             handlePOST(httpExchange);
         }
 
         httpExchange.close();
     }
 
+
     private void handleGET(HttpExchange httpExchange) throws IOException {
         int status = 404;
-        String url = httpExchange.getRequestHeaders().getFirst("Host") + httpExchange.getRequestURI().toString();
-        url = url.replace(":" + Network.SERVER_WEBSERVICE_PORT, "");
+        String host = httpExchange.getRequestHeaders().getFirst("Host");
+        host = host.substring(0, host.indexOf(":"));
+        String url = host + httpExchange.getRequestURI().toString();
         String response = shippingService.getResource(url);
 
-        if (response != null) {
+        if(response != null) {
             status = 200;
         } else {
             response = "<b>NOT FOUND</b>";
@@ -52,6 +56,7 @@ public class ResourceHandler implements HttpHandler {
         os.close();
     }
 
+
     private void handlePOST(HttpExchange httpExchange) throws IOException {
         int status = 400;
         String line = "";
@@ -60,14 +65,14 @@ public class ResourceHandler implements HttpHandler {
         BufferedReader reader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
         RDFMessage message = null;
 
-        while ((line = reader.readLine()) != null) {
+        while((line = reader.readLine()) != null) {
             rawMessage += line;
         }
         message = RDFMessage.parse(rawMessage);
 
-        if (message != null) {
-            shippingService.addShippingPackage(message.getMessage(),
-                    message.getResourceID().replace(String.valueOf(Network.SERVER_WEBSERVICE_PORT), ""));
+        if(message != null) {
+            shippingService.addShippingPackage(message.getMessage(), message.getResourceID().replace(String.valueOf(
+                    Network.SERVER_WEBSERVICE_PORT), ""));
             status = 200;
             response = "<b>OK</b>";
         }

@@ -10,6 +10,7 @@ import main.java.agent.CustomAgent;
 import main.java.agent.RootController;
 import main.java.constants.AgentID;
 import main.java.constants.ServerStatusCodes;
+import main.java.service.CustomLogger;
 
 /**
  * The RegisterSceneController defines the behavior of the register scene.
@@ -20,14 +21,18 @@ import main.java.constants.ServerStatusCodes;
 
 public class RegisterSceneController extends RegisterSceneComponents implements RootController {
 
+    private String logID;
     private CustomAgent agent;
+    private CustomLogger logger;
     private RegisterData data;
     private RegisterValidationController validationController;
     private RegisterRequestController requestController;
 
+
     @FXML
     public void initialize() {
         setGUIStrings();
+        logID = "RegisterSceneController";
         agent = null;
         data = new RegisterData();
         validationController = new RegisterValidationController(data);
@@ -40,9 +45,11 @@ public class RegisterSceneController extends RegisterSceneComponents implements 
         data.getRepeatedPasswordProperty().bind(passwordRepeatField.textProperty());
     }
 
+
     @Override
     public void receiveResult(String message) {
-        switch (requestController.receiveResult(message)) {
+        logger.writeLog(logID + " received message " + message, null);
+        switch(requestController.receiveResult(message)) {
             case ServerStatusCodes.REGISTER_CORRECT:
                 registerButton.setDisable(false);
                 cancelButton.setDisable(false);
@@ -58,51 +65,64 @@ public class RegisterSceneController extends RegisterSceneComponents implements 
         }
     }
 
+
     @Override
     public void setAgent(CustomAgent newAgent) {
         agent = newAgent;
         requestController.setAgent(newAgent);
     }
 
+
+    @Override
+    public void setLogger(CustomLogger newLogger) {
+        logger = newLogger;
+        requestController.setLogger(logger);
+    }
+
+
     /**
      * Clears the text fields and go back to the login scene.
      * 
      * @param event
-     *            - action event
+     *        - action event
      */
     @FXML
     protected void cancelButtonAction(ActionEvent event) {
+        logger.writeLog(logID + " cancel button clicked", null);
         changeToAgent(AgentID.LOGIN_AGENT);
     }
 
+
     /**
-     * Checks if the value in the password repeat field is the same as the value in
-     * the password filed while the user is writing.
+     * Checks if the value in the password repeat field is the same as the value
+     * in the password filed while the user is writing.
      * 
      * @param event
-     *            - key released
+     *        - key released
      */
     @FXML
     protected void passwordMatchingCheck(KeyEvent event) {
-        if (validationController.checkForPasswordEquality()) {
+        if(validationController.checkForPasswordEquality()) {
             registerInfoText.setText("");
         } else {
             registerInfoText.setText(Language.REGISTER_ERROR_PASSWORD_DO_NOT_MATCH);
         }
     }
 
+
     /**
      * Checks if the values in the different text fields are valid, creates the
      * personal key and sends a request to the server.<br>
-     * After a positive answer from the server the method will clear the different
-     * text fields and go back to the login scene.
+     * After a positive answer from the server the method will clear the
+     * different text fields and go back to the login scene.
      * 
      * @param event
-     *            - action event
+     *        - action event
      */
     @FXML
     protected void registerButtonAction(ActionEvent event) {
-        switch (requestController.sendRequest()) {
+        logger.writeLog(logID + " register button clicked", null);
+        switch(requestController.sendRequest()) {
             case 0:
                 registerButton.setDisable(true);
                 cancelButton.setDisable(true);
@@ -119,11 +139,14 @@ public class RegisterSceneController extends RegisterSceneComponents implements 
         }
     }
 
+
     /**
      * Deletes the text in the different text fields and changes to the login
      * service.
      */
     private void changeToAgent(AgentID destination) {
+        logger.writeLog(logID + " switching to agent " + destination.toString(), null);
+
         nicknameField.setText("");
         resourceHubAddressField.setText("");
         passwordField.setText("");
@@ -132,6 +155,7 @@ public class RegisterSceneController extends RegisterSceneComponents implements 
 
         agent.switchAgent(destination);
     }
+
 
     private void setGUIStrings() {
         registerHeader.setText(Language.REGISTER_HEADER);

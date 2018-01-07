@@ -42,13 +42,13 @@ public class ServiceWatchdogTest {
             serviceWatchdog.start();
 
             // test
-            Thread.sleep(31000);
+            Thread.sleep(35000);
             Assert.assertTrue(services[0].isAlive());
             Assert.assertTrue(services[1].isAlive());
             Assert.assertTrue(serviceWatchdog.isAlive());
 
             serviceWatchdog.stopWatchdog();
-            Thread.sleep(31000);
+            Thread.sleep(35000);
             Assert.assertTrue(services[0].isAlive());
             Assert.assertTrue(services[1].isAlive());
             Assert.assertFalse(serviceWatchdog.isAlive());

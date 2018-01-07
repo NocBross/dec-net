@@ -1,5 +1,6 @@
 package test.java.abstraction;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 
@@ -9,6 +10,7 @@ import org.junit.Test;
 import main.java.client_agent.abstraction.ConnectionModel;
 import main.java.connection.TCPConnection;
 import main.java.constants.Network;
+import main.java.service.CustomLogger;
 import test.java.TestData;
 
 public class ConnectionModelTest {
@@ -16,7 +18,9 @@ public class ConnectionModelTest {
     @Test
     public void test() {
         try {
-            ConnectionModel model = new ConnectionModel();
+            String path = "logs/log.txt";
+            CustomLogger logger = new CustomLogger(path);
+            ConnectionModel model = new ConnectionModel(logger);
             ConnectionModelTestSever server = new ConnectionModelTestSever();
             server.start();
             Thread.sleep(50);
@@ -36,7 +40,11 @@ public class ConnectionModelTest {
             // test errors
             server.join();
             Assert.assertNull(server.error);
-        } catch (Exception e) {
+            logger.close();
+            File log = new File(path);
+            log.delete();
+            log.getParentFile().delete();
+        } catch(Exception e) {
             e.printStackTrace();
             throw new AssertionError();
         }
@@ -47,9 +55,11 @@ class ConnectionModelTestSever extends Thread {
 
     public AssertionError error;
 
+
     public ConnectionModelTestSever() {
         error = null;
     }
+
 
     @Override
     public void run() {
@@ -59,7 +69,7 @@ class ConnectionModelTestSever extends Thread {
 
             connection.close();
             socket.close();
-        } catch (Exception e) {
+        } catch(Exception e) {
             e.printStackTrace();
             error = new AssertionError();
         }

@@ -6,18 +6,24 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import main.java.connection.TCPConnection;
 import main.java.constants.Network;
+import main.java.service.CustomLogger;
 
 public class ConnectionModel {
 
     // attributes
+    private CustomLogger logger;
+    private String logID;
     private InetAddress serverAddress;
     private Lock httpConnectionLock;
     private Lock serverConnectionLock;
     private TCPConnection serverConnection;
     // end of attributes
 
+
     // constructor
-    public ConnectionModel() {
+    public ConnectionModel(CustomLogger logger) {
+        this.logger = logger;
+        logID = "ConnectionModel";
         this.serverAddress = null;
         httpConnectionLock = new ReentrantLock();
         serverConnectionLock = new ReentrantLock();
@@ -26,11 +32,13 @@ public class ConnectionModel {
     }
     // end of constructor
 
+
     // methods
     /**
      * Adds a new connection to the model.<br>
      * The calling method has to get serverConnectionLock first. If the calling
-     * method does not hold the lock there is no guarantee for a correct behavior.
+     * method does not hold the lock there is no guarantee for a correct
+     * behavior.
      * 
      * @return true in case of success<br>
      *         false otherwise
@@ -40,17 +48,18 @@ public class ConnectionModel {
         lockServerConnection();
 
         try {
-            if (serverConnection == null && serverAddress != null) {
+            if(serverConnection == null && serverAddress != null) {
                 serverConnection = new TCPConnection(serverAddress, Network.NETWORK_HUB_PORT);
                 result = true;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch(Exception e) {
+            logger.writeLog(logID + " error while connecting to server", e);
         }
 
         unlockServerConnection();
         return result;
     }
+
 
     /**
      * Deletes a specific server connection.<br>
@@ -67,13 +76,14 @@ public class ConnectionModel {
             serverConnection.close();
             serverConnection = null;
             result = true;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch(Exception e) {
+            logger.writeLog(logID + " error while closing server connection", e);
         }
 
         unlockServerConnection();
         return result;
     }
+
 
     /**
      * Returns the TCPConnection to the given service.
@@ -84,12 +94,14 @@ public class ConnectionModel {
         return serverConnection;
     }
 
+
     /**
      * Locks the server connection map for the called thread.
      */
     public void lockHTTPConnection() {
         httpConnectionLock.lock();
     }
+
 
     /**
      * Unlocks the server connection map by the called thread.
@@ -98,12 +110,14 @@ public class ConnectionModel {
         httpConnectionLock.unlock();
     }
 
+
     /**
      * Locks the server connection map for the called thread.
      */
     public void lockServerConnection() {
         serverConnectionLock.lock();
     }
+
 
     /**
      * Unlocks the server connection map by the called thread.
@@ -112,12 +126,13 @@ public class ConnectionModel {
         serverConnectionLock.unlock();
     }
 
+
     /**
-     * Sets the server address to a new one. This function is used if the server is
-     * unreachable and the server has to change.
+     * Sets the server address to a new one. This function is used if the server
+     * is unreachable and the server has to change.
      * 
      * @param newServerAddress
-     *            - address of the new server
+     *        - address of the new server
      */
     public void setServerAddress(InetAddress newServerAddress) {
         serverAddress = newServerAddress;
