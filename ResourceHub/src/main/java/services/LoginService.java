@@ -55,7 +55,7 @@ public class LoginService extends CustomService {
             logger.writeLog(logID + " sending report to " + clientConnection.getInetAddress(), null);
             clientConnection.sendData(report.getMessage());
             if (report.getResult()) {
-                logger.writeLog(logID + " transfer connection to AhippingService", null);
+                logger.writeLog(logID + " transfer connection to ShippingService", null);
                 shippingService.addConnection(userID, clientConnection);
                 logger.writeLog(logID + " sending UpdateMessages to " + clientConnection.getInetAddress(), null);
                 sendUpdateMessages(userID);

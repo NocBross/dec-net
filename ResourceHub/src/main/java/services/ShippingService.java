@@ -149,7 +149,6 @@ public class ShippingService extends CustomService {
     private void checkConnectedClients() {
         connectionLock.lock();
         connectionIterator = connections.keySet().iterator();
-        logger.writeLog(logID + " checking connected clients for new data", null);
         while (connectionIterator.hasNext()) {
             String key = connectionIterator.next();
             try {
@@ -202,7 +201,6 @@ public class ShippingService extends CustomService {
     }
 
     private void checkShippingPackages() {
-        logger.writeLog(logID + " checking ShippingPackage queue", null);
         ShippingPackage packet = null;
 
         shippingPackageQueueLock.lock();

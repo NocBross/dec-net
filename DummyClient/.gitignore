@@ -1,3 +1,5 @@
 /context/
+/content/
+/logs/
 /target/
 /secrets/database

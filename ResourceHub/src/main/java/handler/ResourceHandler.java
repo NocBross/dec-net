@@ -89,7 +89,7 @@ public class ResourceHandler implements HttpHandler {
                 + httpExchange.getRemoteAddress().getHostName(), null);
 
         if (message != null) {
-            logger.writeLog(logID + " transfer resource " + message.getResourceID() + " to ShiüüingService", null);
+            logger.writeLog(logID + " transfer resource " + message.getResourceID() + " to ShippingService", null);
             shippingService.addShippingPackage(message.getMessage(),
                     message.getResourceID().replace(String.valueOf(Network.SERVER_WEBSERVICE_PORT), ""));
             status = 200;
