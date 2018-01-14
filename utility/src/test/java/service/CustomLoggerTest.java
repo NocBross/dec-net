@@ -51,7 +51,7 @@ public class CustomLoggerTest {
             while (reader.readLine() != null) {
                 lines++;
             }
-            Assert.assertEquals(33, lines);
+            Assert.assertEquals(27, lines);
 
             // test thread save
             testFile.delete();

@@ -14,6 +14,9 @@ echo 'installing mysql-server'
 apt-get install mysql-server
 
 echo 'installing Maven'
-apt-get install maven
+apt-get purge maven maven2 maven3
+add-apt-repository ppa:andrei-pozolotin/maven3
+apt-get update
+apt-get install maven3
 
 echo 'setup finished'
