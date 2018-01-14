@@ -12,7 +12,7 @@ mkdir build/
 mkdir build/DesktopClient/
 cp -r Desktop-Client/ClientAgent/target/ClientAgent-*-with-dependencies.jar build/DesktopClient/
 mv build/DesktopClient/ClientAgent-*-with-dependencies.jar build/DesktopClient/Desktop-Client.jar
-chmod +x build/DesktopClient/DesktopClient/Desktop-Client.jar
+chmod +x build/DesktopClient/Desktop-Client.jar
 
 # copy ResouceHub
 mkdir build/ResourceHub/
@@ -26,9 +26,4 @@ chmod +x build/ResourceHub/ResourceHub.jar
 cp -r DummyClient/target/DummyClient-*-with-dependencies.jar build/ResourceHub/
 mv build/ResourceHub/DummyClient-*-with-dependencies.jar build/ResourceHub/DummyClient.jar
 chmod +x build/ResourceHub/DummyClient.jar
-
-# copy install script
-cp -r ResourceHub/install-server-with-interfaces.sh build/ResourceHub/
-cp -r ResourceHub/install-server.sh build/ResourceHub/
-cp -r Desktop-Client/install-client.sh build/DesktopClient/
 

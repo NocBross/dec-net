@@ -97,7 +97,7 @@ public class ShippingServiceTest {
                 List<String> cache = null;
 
                 service.addShippingPackage(data, resource);
-                Thread.sleep(10000);
+                Thread.sleep(30000);
                 cache = database.readCache(resource);
                 Assert.assertEquals(3, cache.size());
                 Collections.sort(cache);
