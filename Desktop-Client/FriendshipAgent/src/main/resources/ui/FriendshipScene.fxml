@@ -38,7 +38,7 @@
 					<contextMenu>
 						<ContextMenu>
 							<items>
-								<MenuItem text="Posts ansehen" />
+								<MenuItem text="Posts ansehen" onAction="#onShowPosts" />
 								<MenuItem text="löschen" onAction="#onDeleteFriend" />
 							</items>
 						</ContextMenu>

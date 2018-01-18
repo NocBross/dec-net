@@ -25,7 +25,7 @@ public class DummyClientLauncher extends Thread {
 
             database.insertNewUser(nickname, password);
             dummyClients[i] = new DummyThread(InetAddress.getByName("localhost"), Network.NETWORK_HUB_PORT, nickname,
-                    password, new ResourceController("content/", new CustomLogger("logs/dummy-" + (i + 1) + ".txt")));
+                    password, new ResourceController("data/", new CustomLogger("logs/dummy-" + (i + 1) + ".txt")));
             dummyClients[i].startClient();
         }
 

@@ -26,18 +26,16 @@ public class ResourceController {
     private Lock resourceLock;
     private CustomLogger logger;
 
-
-    public ResourceController(String contextRoot, CustomLogger logger) {
-        if(contextRoot.indexOf("/") == -1) {
-            this.contextRoot = contextRoot + "/";
+    public ResourceController(String dataRoot, CustomLogger logger) {
+        if (dataRoot.lastIndexOf("/") != dataRoot.length() - 1) {
+            this.contextRoot = dataRoot + "/";
         } else {
-            this.contextRoot = contextRoot;
+            this.contextRoot = dataRoot;
         }
         logID = "ResourceController";
         resourceLock = new ReentrantLock();
         this.logger = logger;
     }
-
 
     public synchronized RDFMessage getResource(String resourceID) {
         logger.writeLog(logID + " reading " + resourceID, null);
@@ -48,32 +46,31 @@ public class ResourceController {
             String line = "";
             File resource = new File(contextRoot + resourceID.replace(Network.NETWORK_PROTOCOL, ""));
 
-            if( !resource.exists()) {
+            if (!resource.exists()) {
                 resourceLock.unlock();
                 return null;
             }
 
             BufferedReader reader = new BufferedReader(new FileReader(resource));
-            while((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 content += line;
             }
             reader.close();
 
             resourceLock.unlock();
             return new RDFMessage(resourceID, content);
-        } catch(Exception e) {
+        } catch (Exception e) {
             logger.writeLog(logID + " error while reading", e);
             resourceLock.unlock();
             return null;
         }
     }
 
-
     public synchronized void updateResource(RDFMessage message) {
         logger.writeLog(logID + " writing " + message.getResourceID(), null);
         resourceLock.lock();
 
-        if(message != null) {
+        if (message != null) {
             BufferedReader reader = null;
             BufferedOutputStream bufferedOutputStream = null;
             try {
@@ -84,13 +81,13 @@ public class ResourceController {
                 Model updatedModel = ModelFactory.createDefaultModel();
                 updatedModel.read(stringReader, null);
 
-                if( !resource.exists()) {
+                if (!resource.exists()) {
                     resource.getParentFile().mkdirs();
                     resource.createNewFile();
                     fileWasCreated = true;
                 }
 
-                if( !fileWasCreated) {
+                if (!fileWasCreated) {
                     Model storedModel = ModelFactory.createDefaultModel();
                     reader = new BufferedReader(new FileReader(resource));
                     storedModel.read(reader, null);
@@ -99,21 +96,21 @@ public class ResourceController {
 
                 bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(resource));
                 updatedModel.write(bufferedOutputStream);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 logger.writeLog(logID + " error while reading", e);
             } finally {
-                if(reader != null) {
+                if (reader != null) {
                     try {
                         reader.close();
-                    } catch(IOException ioe) {
+                    } catch (IOException ioe) {
                         logger.writeLog(logID + " cannot close reader", ioe);
                     }
                 }
 
-                if(bufferedOutputStream != null) {
+                if (bufferedOutputStream != null) {
                     try {
                         bufferedOutputStream.close();
-                    } catch(IOException ioe) {
+                    } catch (IOException ioe) {
                         logger.writeLog(logID + " cannot close output stream", ioe);
                     }
                 }
@@ -123,11 +120,10 @@ public class ResourceController {
         resourceLock.unlock();
     }
 
-
     private Model mergeModels(Model m1, Model m2) {
         Model deletedStatements = m1.difference(m2);
         StmtIterator iterator = deletedStatements.listStatements();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             Statement node = iterator.nextStatement();
             m1.remove(node);
         }

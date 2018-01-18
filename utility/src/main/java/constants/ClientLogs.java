@@ -2,7 +2,7 @@ package main.java.constants;
 
 public class ClientLogs {
 
-    public static final String LOG_PARENT_DIR = "logs/";
+    public static final String LOG_PARENT_DIR = System.getProperty("user.dir") + "/logs/";
 
     public static final String LOG_PREFIX = "log_";
 

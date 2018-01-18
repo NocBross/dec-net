@@ -5,7 +5,7 @@ public class LogFiles {
     /**
      * Prefix of all log files.
      */
-    public static final String LOG_PREFIX = "logs/log_";
+    public static final String LOG_PREFIX = System.getProperty("user.dir") + "/logs/log_";
 
     /**
      * Post fix of all log files which defines the file type
